@@ -1,0 +1,2777 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:07.439708Z",
+     "iopub.status.busy": "2024-04-25T17:46:07.439319Z",
+     "iopub.status.idle": "2024-04-25T17:46:07.444951Z",
+     "shell.execute_reply": "2024-04-25T17:46:07.444084Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:07.439678Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import string\n",
+    "from functools import reduce\n",
+    "from operator import add\n",
+    "import ast\n",
+    "import re\n",
+    "import spacy\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:07.901618Z",
+     "iopub.status.busy": "2024-04-25T17:46:07.900935Z",
+     "iopub.status.idle": "2024-04-25T17:46:08.321919Z",
+     "shell.execute_reply": "2024-04-25T17:46:08.320678Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:07.901583Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "df=pd.read_csv('C:/Users/NAGASHREE/OneDrive/Desktop/bitebook/Food Ingredients and Recipe Dataset with Image Name Mapping.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:08.324181Z",
+     "iopub.status.busy": "2024-04-25T17:46:08.323826Z",
+     "iopub.status.idle": "2024-04-25T17:46:08.356139Z",
+     "shell.execute_reply": "2024-04-25T17:46:08.355080Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:08.324151Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "DataFrame Info:\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 13501 entries, 0 to 13500\n",
+      "Data columns (total 6 columns):\n",
+      " #   Column               Non-Null Count  Dtype \n",
+      "---  ------               --------------  ----- \n",
+      " 0   Unnamed: 0           13501 non-null  int64 \n",
+      " 1   Title                13496 non-null  object\n",
+      " 2   Ingredients          13501 non-null  object\n",
+      " 3   Instructions         13493 non-null  object\n",
+      " 4   Image_Name           13501 non-null  object\n",
+      " 5   Cleaned_Ingredients  13501 non-null  object\n",
+      "dtypes: int64(1), object(5)\n",
+      "memory usage: 633.0+ KB\n",
+      "None\n",
+      "\n",
+      "Missing Values:\n",
+      "Unnamed: 0             0\n",
+      "Title                  5\n",
+      "Ingredients            0\n",
+      "Instructions           8\n",
+      "Image_Name             0\n",
+      "Cleaned_Ingredients    0\n",
+      "dtype: int64\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"DataFrame Info:\")\n",
+    "print(df.info())\n",
+    "\n",
+    "print(\"\\nMissing Values:\")\n",
+    "print(df.isnull().sum())\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:17.217204Z",
+     "iopub.status.busy": "2024-04-25T17:46:17.216837Z",
+     "iopub.status.idle": "2024-04-25T17:46:17.246991Z",
+     "shell.execute_reply": "2024-04-25T17:46:17.246141Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:17.217178Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "DataFrame Info after dropping missing values:\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Index: 13493 entries, 0 to 13500\n",
+      "Data columns (total 6 columns):\n",
+      " #   Column               Non-Null Count  Dtype \n",
+      "---  ------               --------------  ----- \n",
+      " 0   Unnamed: 0           13493 non-null  int64 \n",
+      " 1   Title                13493 non-null  object\n",
+      " 2   Ingredients          13493 non-null  object\n",
+      " 3   Instructions         13493 non-null  object\n",
+      " 4   Image_Name           13493 non-null  object\n",
+      " 5   Cleaned_Ingredients  13493 non-null  object\n",
+      "dtypes: int64(1), object(5)\n",
+      "memory usage: 737.9+ KB\n",
+      "None\n"
+     ]
+    }
+   ],
+   "source": [
+    "df.dropna(inplace=True)\n",
+    "\n",
+    "# Confirm that missing values have been dropped\n",
+    "print(\"DataFrame Info after dropping missing values:\")\n",
+    "print(df.info())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:17.590896Z",
+     "iopub.status.busy": "2024-04-25T17:46:17.590479Z",
+     "iopub.status.idle": "2024-04-25T17:46:17.597967Z",
+     "shell.execute_reply": "2024-04-25T17:46:17.596963Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:17.590860Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(13493, 6)"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:17.910913Z",
+     "iopub.status.busy": "2024-04-25T17:46:17.910508Z",
+     "iopub.status.idle": "2024-04-25T17:46:18.000361Z",
+     "shell.execute_reply": "2024-04-25T17:46:17.999229Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:17.910880Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "6\n",
+      "(13487, 6)\n"
+     ]
+    }
+   ],
+   "source": [
+    "nc_ingred_index = [index for i, index in zip(df['Cleaned_Ingredients'], df.index) if all(j.isdigit() or j in string.punctuation for j in i)]\n",
+    "nc_title_index = [index for i, index in zip(df['Title'], df.index) if all(j.isdigit() or j in string.punctuation for j in i)]\n",
+    "nc_instr_index = [index for i, index in zip(df['Instructions'], df.index) if all(j.isdigit() or j in string.punctuation for j in i)]\n",
+    "\n",
+    "# Checking number of rows in each category that are only punc/nums\n",
+    "index_list = [nc_ingred_index, nc_title_index, nc_instr_index]\n",
+    "num_to_drop = [len(x) for x in index_list]\n",
+    "\n",
+    "# Generating unique indices for index_list and dropping from DataFrame\n",
+    "inds_to_drop = set(reduce(add, index_list))\n",
+    "print(len(inds_to_drop))\n",
+    "\n",
+    "# Dropping rows with indices from inds_to_drop and resetting index\n",
+    "new_df = df.drop(index=inds_to_drop).reset_index(drop=True)\n",
+    "print(new_df.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:18.250936Z",
+     "iopub.status.busy": "2024-04-25T17:46:18.249993Z",
+     "iopub.status.idle": "2024-04-25T17:46:18.277028Z",
+     "shell.execute_reply": "2024-04-25T17:46:18.275907Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:18.250895Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(13480, 6)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "Unnamed: 0             0\n",
+       "Title                  0\n",
+       "Ingredients            0\n",
+       "Instructions           0\n",
+       "Image_Name             0\n",
+       "Cleaned_Ingredients    0\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Removing recipes which have too little instructions\n",
+    "empty_instr_ind = [index for i, index in zip(new_df['Cleaned_Ingredients'], new_df.index) if len(i) < 20]\n",
+    "new_df = new_df.drop(index = empty_instr_ind).reset_index(drop=True)\n",
+    "\n",
+    "print(new_df.shape)\n",
+    "new_df.isna().sum()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:18.859224Z",
+     "iopub.status.busy": "2024-04-25T17:46:18.858528Z",
+     "iopub.status.idle": "2024-04-25T17:46:19.331079Z",
+     "shell.execute_reply": "2024-04-25T17:46:19.330072Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:18.859181Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new_df['Cleaned_Ingredients'] = new_df['Cleaned_Ingredients'].apply(ast.literal_eval)\n",
+    "new_df['Title']=new_df['Title'].astype(str)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:19.335302Z",
+     "iopub.status.busy": "2024-04-25T17:46:19.334680Z",
+     "iopub.status.idle": "2024-04-25T17:46:19.344309Z",
+     "shell.execute_reply": "2024-04-25T17:46:19.342957Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:19.335259Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    Miso-Butter Roast Chicken With Acorn Squash Pa...\n",
+       "1                      Crispy Salt and Pepper Potatoes\n",
+       "2                          Thanksgiving Mac and Cheese\n",
+       "3                   Italian Sausage and Bread Stuffing\n",
+       "4                                         Newton's Law\n",
+       "Name: Title, dtype: object"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new_df['Title'].head(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:19.693200Z",
+     "iopub.status.busy": "2024-04-25T17:46:19.692774Z",
+     "iopub.status.idle": "2024-04-25T17:46:19.700955Z",
+     "shell.execute_reply": "2024-04-25T17:46:19.699838Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:19.693166Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['1 (3½–4-lb.) whole chicken',\n",
+       " '2¾ tsp. kosher salt, divided, plus more',\n",
+       " '2 small acorn squash (about 3 lb. total)',\n",
+       " '2 Tbsp. finely chopped sage',\n",
+       " '1 Tbsp. finely chopped rosemary',\n",
+       " '6 Tbsp. unsalted butter, melted, plus 3 Tbsp. room temperature',\n",
+       " '¼ tsp. ground allspice',\n",
+       " 'Pinch of crushed red pepper flakes',\n",
+       " 'Freshly ground black pepper',\n",
+       " '⅓ loaf good-quality sturdy white bread, torn into 1\" pieces (about 2½ cups)',\n",
+       " '2 medium apples (such as Gala or Pink Lady; about 14 oz. total), cored, cut into 1\" pieces',\n",
+       " '2 Tbsp. extra-virgin olive oil',\n",
+       " '½ small red onion, thinly sliced',\n",
+       " '3 Tbsp. apple cider vinegar',\n",
+       " '1 Tbsp. white miso',\n",
+       " '¼ cup all-purpose flour',\n",
+       " '2 Tbsp. unsalted butter, room temperature',\n",
+       " '¼ cup dry white wine',\n",
+       " '2 cups unsalted chicken broth',\n",
+       " '2 tsp. white miso',\n",
+       " 'Kosher salt',\n",
+       " 'freshly ground pepper']"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new_df.loc[0,'Cleaned_Ingredients']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:20.015334Z",
+     "iopub.status.busy": "2024-04-25T17:46:20.014920Z",
+     "iopub.status.idle": "2024-04-25T17:46:20.038446Z",
+     "shell.execute_reply": "2024-04-25T17:46:20.037473Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:20.015303Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...\n",
+       "1    2 large egg whites; 1 pound new potatoes (abou...\n",
+       "2    1 cup evaporated milk; 1 cup whole milk; 1 tsp...\n",
+       "3    1 (¾- to 1-pound) round Italian loaf, cut into...\n",
+       "4    1 teaspoon dark brown sugar; 1 teaspoon hot wa...\n",
+       "Name: Ingredients_Text, dtype: object"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new_df['Ingredients_Text'] = ['; '.join(ingredients) for ingredients in new_df['Cleaned_Ingredients']]\n",
+    "new_df['Ingredients_Text'].head()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:20.292768Z",
+     "iopub.status.busy": "2024-04-25T17:46:20.292396Z",
+     "iopub.status.idle": "2024-04-25T17:46:20.305676Z",
+     "shell.execute_reply": "2024-04-25T17:46:20.304450Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:20.292741Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new_df['Ingredients_Count'] = [len(ingredients) for ingredients in new_df['Cleaned_Ingredients']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:20.552857Z",
+     "iopub.status.busy": "2024-04-25T17:46:20.552498Z",
+     "iopub.status.idle": "2024-04-25T17:46:21.555929Z",
+     "shell.execute_reply": "2024-04-25T17:46:21.554842Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:20.552830Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new_df.head()\n",
+    "new_df.to_csv('Processed_Recipees.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:21.558414Z",
+     "iopub.status.busy": "2024-04-25T17:46:21.557537Z",
+     "iopub.status.idle": "2024-04-25T17:46:21.593024Z",
+     "shell.execute_reply": "2024-04-25T17:46:21.591937Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:21.558381Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Miso-Butter Roast Chicken With Acorn Squash Panzanella 1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher salt, divided, plus more; 2 small acorn squash (about 3 lb. total); 2 Tbsp. finely chopped sage; 1 Tbsp. finely chopped rosemary; 6 Tbsp. unsalted butter, melted, plus 3 Tbsp. room temperature; ¼ tsp. ground allspice; Pinch of crushed red pepper flakes; Freshly ground black pepper; ⅓ loaf good-quality sturdy white bread, torn into 1\" pieces (about 2½ cups); 2 medium apples (such as Gala or Pink Lady; about 14 oz. total), cored, cut into 1\" pieces; 2 Tbsp. extra-virgin olive oil; ½ small red onion, thinly sliced; 3 Tbsp. apple cider vinegar; 1 Tbsp. white miso; ¼ cup all-purpose flour; 2 Tbsp. unsalted butter, room temperature; ¼ cup dry white wine; 2 cups unsalted chicken broth; 2 tsp. white miso; Kosher salt; freshly ground pepper Pat chicken dry with paper towels, season all over with 2 tsp. salt, and tie legs together with kitchen twine. Let sit at room temperature 1 hour.\\nMeanwhile, halve squash and scoop out seeds. Run a vegetable peeler along ridges of squash halves to remove skin. Cut each half into ½\"-thick wedges; arrange on a rimmed baking sheet.\\nCombine sage, rosemary, and 6 Tbsp. melted butter in a large bowl; pour half of mixture over squash on baking sheet. Sprinkle squash with allspice, red pepper flakes, and ½ tsp. salt and season with black pepper; toss to coat.\\nAdd bread, apples, oil, and ¼ tsp. salt to remaining herb butter in bowl; season with black pepper and toss to combine. Set aside.\\nPlace onion and vinegar in a small bowl; season with salt and toss to coat. Let sit, tossing occasionally, until ready to serve.\\nPlace a rack in middle and lower third of oven; preheat to 425°F. Mix miso and 3 Tbsp. room-temperature butter in a small bowl until smooth. Pat chicken dry with paper towels, then rub or brush all over with miso butter. Place chicken in a large cast-iron skillet and roast on middle rack until an instant-read thermometer inserted into the thickest part of breast registers 155°F, 50–60 minutes. (Temperature will climb to 165°F while chicken rests.) Let chicken rest in skillet at least 5 minutes, then transfer to a plate; reserve skillet.\\nMeanwhile, roast squash on lower rack until mostly tender, about 25 minutes. Remove from oven and scatter reserved bread mixture over, spreading into as even a layer as you can manage. Return to oven and roast until bread is golden brown and crisp and apples are tender, about 15 minutes. Remove from oven, drain pickled onions, and toss to combine. Transfer to a serving dish.\\nUsing your fingers, mash flour and butter in a small bowl to combine.\\nSet reserved skillet with chicken drippings over medium heat. You should have about ¼ cup, but a little over or under is all good. (If you have significantly more, drain off and set excess aside.) Add wine and cook, stirring often and scraping up any browned bits with a wooden spoon, until bits are loosened and wine is reduced by about half (you should be able to smell the wine), about 2 minutes. Add butter mixture; cook, stirring often, until a smooth paste forms, about 2 minutes. Add broth and any reserved drippings and cook, stirring constantly, until combined and thickened, 6–8 minutes. Remove from heat and stir in miso. Taste and season with salt and black pepper.\\nServe chicken with gravy and squash panzanella alongside.'"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "all_text = new_df['Title'] + ' ' + new_df['Ingredients_Text'] + ' ' + new_df['Instructions']\n",
+    "all_text[0]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:21.594696Z",
+     "iopub.status.busy": "2024-04-25T17:46:21.594299Z",
+     "iopub.status.idle": "2024-04-25T17:46:22.158137Z",
+     "shell.execute_reply": "2024-04-25T17:46:22.156987Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:21.594666Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "all_text.to_csv(\"All_text.csv\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:22.160723Z",
+     "iopub.status.busy": "2024-04-25T17:46:22.160295Z",
+     "iopub.status.idle": "2024-04-25T17:46:25.967473Z",
+     "shell.execute_reply": "2024-04-25T17:46:25.966129Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:22.160682Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "def clean_text(documents):\n",
+    "    cleaned_text = []\n",
+    "    for doc in documents:\n",
+    "        doc = doc.translate(str.maketrans('', '', string.punctuation)) # Remove Punctuation\n",
+    "        doc = re.sub(r'\\d+', '', doc) # Remove Digits\n",
+    "        doc = doc.replace('\\n',' ') # Remove New Lines\n",
+    "        doc = doc.strip() # Remove Leading White Space\n",
+    "        doc = re.sub(' +', ' ', doc) # Remove multiple white spaces\n",
+    "        cleaned_text.append(doc)\n",
+    "    return cleaned_text\n",
+    "\n",
+    "# Cleaning Text\n",
+    "cleaned_text = clean_text(all_text)\n",
+    "pd.Series(cleaned_text).to_csv('Cleaned_Text.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:25.970754Z",
+     "iopub.status.busy": "2024-04-25T17:46:25.970028Z",
+     "iopub.status.idle": "2024-04-25T17:46:25.978228Z",
+     "shell.execute_reply": "2024-04-25T17:46:25.977091Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:25.970706Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Thanksgiving Mac and Cheese 1 cup evaporated milk; 1 cup whole milk; 1 tsp. garlic powder; 1 tsp. onion powder; 1 tsp. smoked paprika; ½ tsp. freshly ground black pepper; 1 tsp. kosher salt, plus more; 2 lb. extra-sharp cheddar, coarsely grated; 4 oz. full-fat cream cheese; 1 lb. elbow macaroni Place a rack in middle of oven; preheat to 400°. Bring evaporated milk and whole milk to a bare simmer in a large saucepan over medium heat. Whisk in garlic powder, onion powder, paprika, pepper, and 1 tsp. salt. Working in batches, whisk in three fourths of the cheddar, then all of the cream cheese.\\nMeanwhile, bring a large pot of generously salted water to a boil (it should have a little less salt than seawater). Cook macaroni, stirring occasionally, until very al dente, about 4 minutes. Drain in a colander.\\nAdd macaroni to cheese sauce in pan and mix until well coated. Evenly spread out half of macaroni mixture in a 13x9\" baking dish. Sprinkle half of remaining cheddar evenly over. Layer remaining macaroni mixture on top and sprinkle with remaining cheddar. Bake until all of the cheese is melted, about 10 minutes. Let cool slightly before serving.'"
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "all_text[2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:25.980617Z",
+     "iopub.status.busy": "2024-04-25T17:46:25.980269Z",
+     "iopub.status.idle": "2024-04-25T17:46:25.992101Z",
+     "shell.execute_reply": "2024-04-25T17:46:25.990919Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:25.980590Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Thanksgiving Mac and Cheese cup evaporated milk cup whole milk tsp garlic powder tsp onion powder tsp smoked paprika ½ tsp freshly ground black pepper tsp kosher salt plus more lb extrasharp cheddar coarsely grated oz fullfat cream cheese lb elbow macaroni Place a rack in middle of oven preheat to ° Bring evaporated milk and whole milk to a bare simmer in a large saucepan over medium heat Whisk in garlic powder onion powder paprika pepper and tsp salt Working in batches whisk in three fourths of the cheddar then all of the cream cheese Meanwhile bring a large pot of generously salted water to a boil it should have a little less salt than seawater Cook macaroni stirring occasionally until very al dente about minutes Drain in a colander Add macaroni to cheese sauce in pan and mix until well coated Evenly spread out half of macaroni mixture in a x baking dish Sprinkle half of remaining cheddar evenly over Layer remaining macaroni mixture on top and sprinkle with remaining cheddar Bake until all of the cheese is melted about minutes Let cool slightly before serving'"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cleaned_text[2]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:25.995127Z",
+     "iopub.status.busy": "2024-04-25T17:46:25.994742Z",
+     "iopub.status.idle": "2024-04-25T17:46:26.886566Z",
+     "shell.execute_reply": "2024-04-25T17:46:26.885406Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:25.995098Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Thanksgiving Mac Cheese cup evaporate milk cup milk tsp garlic powder tsp onion powder tsp smoke paprika ½ tsp freshly grind black pepper tsp kosher salt plus lb extrasharp cheddar coarsely grated oz fullfat cream cheese lb elbow macaroni Place rack middle oven preheat ° bring evaporate milk milk bare simmer large saucepan medium heat Whisk garlic powder onion powder paprika pepper tsp salt Working batch whisk fourth cheddar cream cheese bring large pot generously salt water boil little salt seawater Cook macaroni stir occasionally al dente minute Drain colander Add macaroni cheese sauce pan mix coat evenly spread half macaroni mixture x bake dish Sprinkle half remain cheddar evenly Layer remain macaroni mixture sprinkle remain cheddar Bake cheese melt minute let cool slightly serve'"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Testing Strategies and Code\n",
+    "nlp = spacy.load(\"en_core_web_sm\")\n",
+    "\n",
+    "' '.join([token.lemma_ for token in nlp(cleaned_text[2]) if not token.is_stop])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:26.888390Z",
+     "iopub.status.busy": "2024-04-25T17:46:26.887966Z",
+     "iopub.status.idle": "2024-04-25T17:46:26.893859Z",
+     "shell.execute_reply": "2024-04-25T17:46:26.892818Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:26.888359Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "# Tokenizing Function that lemmatizes words and removes Stop Words\n",
+    "def text_tokenizer(documents):\n",
+    "    tokenized_documents = []\n",
+    "    for doc in documents:\n",
+    "        tok_doc = ' '.join([token.lemma_ for token in nlp(doc) if not token.is_stop])\n",
+    "        tokenized_documents.append(tok_doc)\n",
+    "    return tokenized_documents"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:46:26.895850Z",
+     "iopub.status.busy": "2024-04-25T17:46:26.895468Z",
+     "iopub.status.idle": "2024-04-25T17:54:56.988349Z",
+     "shell.execute_reply": "2024-04-25T17:54:56.987356Z",
+     "shell.execute_reply.started": "2024-04-25T17:46:26.895815Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "tokenized_text = text_tokenizer(cleaned_text)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Saving the tokenized_text to a csv so not to run a whole cell again"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:54:56.990673Z",
+     "iopub.status.busy": "2024-04-25T17:54:56.990361Z",
+     "iopub.status.idle": "2024-04-25T17:54:57.396464Z",
+     "shell.execute_reply": "2024-04-25T17:54:57.395361Z",
+     "shell.execute_reply.started": "2024-04-25T17:54:56.990646Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "MisoButter Roast Chicken Acorn Squash Panzanella ½–lb chicken ¾ tsp kosher salt divide plus small acorn squash lb total Tbsp finely chop sage Tbsp finely chop rosemary Tbsp unsalted butter melt plus Tbsp room temperature ¼ tsp ground allspice Pinch crush red pepper flake freshly ground black pepper ⅓ loaf goodquality sturdy white bread tear piece ½ cup medium apple Gala Pink Lady oz total core cut piece tbsp extravirgin olive oil ½ small red onion thinly slice Tbsp apple cider vinegar tbsp white miso ¼ cup allpurpose flour Tbsp unsalted butter room temperature ¼ cup dry white wine cups unsalte chicken broth tsp white miso Kosher salt freshly ground pepper Pat chicken dry paper towel season tsp salt tie leg kitchen twine let sit room temperature hour halve squash scoop seed run vegetable peeler ridge squash half remove skin cut half ½thick wedge arrange rimmed bake sheet Combine sage rosemary Tbsp melt butter large bowl pour half mixture squash bake sheet Sprinkle squash allspice red pepper flake ½ tsp salt season black pepper toss coat add bread apple oil ¼ tsp salt remain herb butter bowl season black pepper toss combine Set aside Place onion vinegar small bowl season salt toss coat let sit toss occasionally ready serve Place rack middle low oven preheat ° F Mix miso tbsp roomtemperature butter small bowl smooth Pat chicken dry paper towel rub brush miso butter Place chicken large castiron skillet roast middle rack instantread thermometer insert thick breast register ° F – minute Temperature climb ° f chicken rest let chicken rest skillet minute transfer plate reserve skillet roast squash low rack tender minute Remove oven scatter reserve bread mixture spread layer manage Return oven roast bread golden brown crisp apple tender minute Remove oven drain pickle onion toss combine Transfer serve dish finger mash flour butter small bowl combine Set reserve skillet chicken dripping medium heat ¼ cup little good significantly drain set excess aside add wine cook stir scrape brown bit wooden spoon bit loosened wine reduce half able smell wine minute add butter mixture cook stir smooth paste form minute add broth reserved dripping cook stir constantly combine thicken – minute remove heat stir miso Taste season salt black pepper serve chicken gravy squash panzanella alongside\n",
+      "\n",
+      "\n",
+      "\n",
+      "\n",
+      "Thanksgiving Mac Cheese cup evaporate milk cup milk tsp garlic powder tsp onion powder tsp smoke paprika ½ tsp freshly grind black pepper tsp kosher salt plus lb extrasharp cheddar coarsely grated oz fullfat cream cheese lb elbow macaroni Place rack middle oven preheat ° bring evaporate milk milk bare simmer large saucepan medium heat Whisk garlic powder onion powder paprika pepper tsp salt Working batch whisk fourth cheddar cream cheese bring large pot generously salt water boil little salt seawater Cook macaroni stir occasionally al dente minute Drain colander Add macaroni cheese sauce pan mix coat evenly spread half macaroni mixture x bake dish Sprinkle half remain cheddar evenly Layer remain macaroni mixture sprinkle remain cheddar Bake cheese melt minute let cool slightly serve\n"
+     ]
+    }
+   ],
+   "source": [
+    "pd.Series(tokenized_text).to_csv('tokenized_text.csv')\n",
+    "\n",
+    "print(tokenized_text[0])\n",
+    "print(\"\\n\"*3)\n",
+    "print(tokenized_text[2])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:54:57.400302Z",
+     "iopub.status.busy": "2024-04-25T17:54:57.399328Z",
+     "iopub.status.idle": "2024-04-25T17:54:59.254426Z",
+     "shell.execute_reply": "2024-04-25T17:54:59.253305Z",
+     "shell.execute_reply.started": "2024-04-25T17:54:57.400266Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(13480, 17081)\n",
+      "17081\n"
+     ]
+    }
+   ],
+   "source": [
+    "from sklearn.feature_extraction.text import TfidfVectorizer\n",
+    "\n",
+    "vectorizer = TfidfVectorizer(lowercase = True,\n",
+    "                            ngram_range = (1,1))\n",
+    "\n",
+    "text_tfidf = vectorizer.fit_transform(tokenized_text)\n",
+    "tfidf_words = vectorizer.get_feature_names_out()\n",
+    "print(text_tfidf.shape)\n",
+    "print(len(tfidf_words))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:54:59.256000Z",
+     "iopub.status.busy": "2024-04-25T17:54:59.255682Z",
+     "iopub.status.idle": "2024-04-25T17:54:59.262847Z",
+     "shell.execute_reply": "2024-04-25T17:54:59.261720Z",
+     "shell.execute_reply.started": "2024-04-25T17:54:59.255972Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(13480, 17081)"
+      ]
+     },
+     "execution_count": 30,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "text_tfidf.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:54:59.265194Z",
+     "iopub.status.busy": "2024-04-25T17:54:59.264698Z",
+     "iopub.status.idle": "2024-04-25T17:59:10.473496Z",
+     "shell.execute_reply": "2024-04-25T17:59:10.472130Z",
+     "shell.execute_reply.started": "2024-04-25T17:54:59.265166Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(13480, 50)"
+      ]
+     },
+     "execution_count": 32,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.decomposition import LatentDirichletAllocation as LDA\n",
+    "\n",
+    "lda = LDA(n_components = 50,\n",
+    "          n_jobs = 1,\n",
+    "          max_iter = 100)\n",
+    "text_lda = lda.fit_transform(text_tfidf)\n",
+    "text_lda.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:10.475889Z",
+     "iopub.status.busy": "2024-04-25T17:59:10.475523Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.620992Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.619882Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:10.475852Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "c:\\Users\\NAGASHREE\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\sklearn\\decomposition\\_nmf.py:1759: ConvergenceWarning: Maximum number of iterations 100 reached. Increase it to improve convergence.\n",
+      "  warnings.warn(\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "(13480, 50)"
+      ]
+     },
+     "execution_count": 33,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.decomposition import NMF\n",
+    "\n",
+    "nmf = NMF(alpha_W=0.0,\n",
+    "         init='nndsvdar',\n",
+    "         l1_ratio=0.0,\n",
+    "         max_iter = 100,\n",
+    "         n_components = 50,\n",
+    "         solver='cd')\n",
+    "\n",
+    "text_nmf = nmf.fit_transform(text_tfidf)\n",
+    "text_nmf.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.623607Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.622879Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.655021Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.653687Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.623565Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "# variable dependencies:\n",
+    "text_series = pd.Series(all_text)\n",
+    "\n",
+    "def docs_by_tops(top_mat, topic_range = (0,0), doc_range = (0,2)):\n",
+    "    for i in range(topic_range[0], topic_range[1]):\n",
+    "        topic_scores = pd.Series(top_mat[:,i])\n",
+    "        doc_index = topic_scores.sort_values(ascending = False)[doc_range[0]:doc_range[1]].index\n",
+    "        for j, index in enumerate(doc_index, doc_range[0]):\n",
+    "            print('Topic #{}'.format(i),\n",
+    "                  '\\nDocument #{}'.format(j),\n",
+    "                  '\\nTopic Score: {}\\n\\n'.format(topic_scores[index]),\n",
+    "                  text_series[index], '\\n\\n')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "* By arranging them in descending order we have selected top three recipees in first three topics."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.657840Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.657082Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.681340Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.680082Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.657792Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Topic #0 \n",
+      "Document #0 \n",
+      "Topic Score: 0.33663739743256177\n",
+      "\n",
+      " Parboiled Rice \"2 cups Indian parboiled rice; Uncle Bens Converted Rice; or long-grain white rice\" Bring 3 to 4 quarts water to a boil in a pasta pot.\n",
+      "Boil Indian parboiled rice, uncovered, until tender, about 45 minutes (converted or long-grain rice will take about 18 minutes). Drain well in a sieve and serve hot. \n",
+      "\n",
+      "\n",
+      "Topic #0 \n",
+      "Document #1 \n",
+      "Topic Score: 0.30509928997743624\n",
+      "\n",
+      " Pearl Button 8 to 10 ice cubes; 1/4 cup (2 ounces) cachaca; 4 1/2 teaspoons (3/4 ounce) Lillet Blanc; 1 tablespoon (1/2 ounce) freshly squeezed lime juice; 1/2 cup (4 ounces) San Pellegrino Limonata; 1/2 grapefruit wheel Fill 10-ounce Collins or highball glass with ice. Add cachaca, Lillet Blanc, and lime juice. Top with San Pellegrino Limonata and stir briefly. Place 1/2 grapefruit wheel in drink and serve immediately. \n",
+      "\n",
+      "\n",
+      "Topic #0 \n",
+      "Document #2 \n",
+      "Topic Score: 0.2598108247937577\n",
+      "\n",
+      " Southern Comfort Champagne Cocktail 1 ounce Southern Comfort; Dash Angostura bitters; 4 ounces chilled champagne; Twist lemon peel Pour the Southern Comfort into a champagne glass, add bitters and champagne and garnish with the lemon peel. Alternatively, you may use either brandy (omitting the Angostura bitters and substituting an orange peel), or cognac (adding an additional dash or two of Angostura bitters and omitting the lemon peel). \n",
+      "\n",
+      "\n",
+      "Topic #1 \n",
+      "Document #0 \n",
+      "Topic Score: 0.3133165373625292\n",
+      "\n",
+      " Raspberry Snakebite 1 ounce crème de cassis; raspberry lambic beer (such as Lindemans Framboise); Mint sprig garnish Add 1 ounce crème de cassis to a pint glass filled with ice. Top off with raspberry lambic beer (such as Lindemans Framboise). Garnish with a mint sprig. \n",
+      "\n",
+      "\n",
+      "Topic #1 \n",
+      "Document #1 \n",
+      "Topic Score: 0.29201321244529466\n",
+      "\n",
+      " Carnation Lemon Bars 2 cups all-purpose flour; 1/2 cup powdered sugar; 1 cup butter or margarine, softened; 1 (14-ounce) can Nestlé Carnation Sweetened Condensed Milk; 4 large eggs; 2/3 cup lemon juice; 1 tablespoon all-purpose flour; 1 teaspoon baking powder; 1/4 teaspoon salt; 4 drops yellow food coloring (optional); 1 tablespoon grated lemon peel; Sifted powdered sugar (optional) Preheat oven to 350°F.\n",
+      "Combine flour and powdered sugar in a medium bowl. Cut in butter with pastry blender or 2 knives until mixture is crumbly. Press lightly onto bottom and halfway up sides of ungreased 13 x 9-inch baking pan.\n",
+      "Bake for 20 minutes.\n",
+      "Beat sweetened condensed milk and eggs in a large mixing bowl until fluffy. Beat in lemon juice, flour, baking powder, salt, and food coloring until blended. Fold in grated lemon peel; pour over crust.\n",
+      "Bake until filling is set and crust is golden brown, about 20 to 25 minutes. Cool in pan on wire rack. Refrigerate for 2 hours.\n",
+      "Cut into bars; sprinkle with powdered sugar.\n",
+      "This recipe is made available as a courtesy by Nestle USA and www.VeryBestBaking.com. Nestle® Toll House® is a registered trademark of Société des Produits Nestlé S.A., Vevey, Switzerland. \n",
+      "\n",
+      "\n",
+      "Topic #1 \n",
+      "Document #2 \n",
+      "Topic Score: 0.2550537123477724\n",
+      "\n",
+      " Queso Manchego con Aceitunas y Piquillos One 1 3/4-inch wedge (about 1/2 pound) Manchego cheese; 30 cured black olives, pitted and chopped; 3/4 cup chopped piquillo peppers or pimientos; 6 anchovy fillets; 1 tablespoon extra virgin olive oil; Minced fresh parsley Cut the wedge of cheese lengthwise into 1/8-inch slices to form triangular pieces. In a mortar or mini processor, mash to a paste the olives, piquillos, anchovies, and oil.\n",
+      "Spread about 3/4 teaspoon of the mixture on each cheese slice. Sprinkle with parsley and arrange attractively on a serving dish. \n",
+      "\n",
+      "\n",
+      "Topic #2 \n",
+      "Document #0 \n",
+      "Topic Score: 0.45991982252410735\n",
+      "\n",
+      " Deep-Fried Tarantula Spider 2 cups canola or vegetable oil; 2 frozen adult Texas brown, Chilean rose, or similar-sized tarantulas, thawed; 1 cup tempura batter; 1 teaspoon smoked paprika In a deep saucepan or deep-fat fryer, heat the oil to 350°F.\n",
+      "With a sharp knife, sever and discard the abdomens from the two tarantulas. Singe off any of the spider's body hairs with a crème brûlée torch or butane cigarette lighter.\n",
+      "Dip each spider into the tempura batter to thoroughly coat. Use a slotted spoon or your hands to make sure each spider is spread-eagled (so to speak) and not clumped together before dropping it into the hot oil.\n",
+      "Deep-fry the spiders, one at a time, until the batter is lightly browned, about 1 minute. Remove each spider from the oil and place it on paper towels to drain.\n",
+      "Use a sharp knife to cut each spider in two lengthwise. Sprinkle with the paprika and serve. Encourage your guests to try the legs first and, if still hungry, to nibble on the meat-filled mesothorax, avoiding the spider's paired fangs, which are tucked away in the head region. \n",
+      "\n",
+      "\n",
+      "Topic #2 \n",
+      "Document #1 \n",
+      "Topic Score: 0.2413522942251987\n",
+      "\n",
+      " Summertime Sōmen Noodles 1 (9.5-ounce) package sōmen noodles; 1 large bowl filled with 1 to 2 cups ice and water; Rice vinegar; Reduced-sodium tamari soy sauce; Sriracha sauce; Katsuobushi (Japanese dried bonito flakes); Negi (green onions, thinly sliced on the bias); Furikake (Japanese seaweed seasoning); Arugula or your favorite leafy greens; Kaiware sprouts (daikon radish sprouts); Gomashio (toasted, salted, crushed sesame seeds); Tofu cubes; Avocado slices In a large pot of boiling water, cook the sōmen noodles as directed on the package. Drain the noodles and place them in a large bowl filled with ice and water to serve. Your sōmen noodles will be the highlight of the table, so serve them up in a gorgeous bowl.\n",
+      "Serve family-style in the middle of your table. Using tongs or chopsticks, place the noodles into individual bowls, shaking off any residual water before serving.\n",
+      "Add your choice of sauces and toppings. I usually top with a touch of shōyu and rice vinegar, and offer a variety of toppings— negi, katsuobushi, arugula, tofu, avocado slices, etc. \n",
+      "\n",
+      "\n",
+      "Topic #2 \n",
+      "Document #2 \n",
+      "Topic Score: 0.24002902542217633\n",
+      "\n",
+      " Fireworks 1/4 ounce grenadine syrup; 1/4 ounce crème de cassis; 1/4 ounce apricot brandy; 1/4 ounce Cointreau; 1/4 ounce green Chartreuse; 1/4 ounce cognac or other brandy; 1/4 ounce Kirschwasser Pour all the ingredients, in the order listed, into a narrow, straight-sided 2-ounce liqueur glass. \n",
+      "\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "docs_by_tops(text_lda,(0,3),(0,3))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.684513Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.683607Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.696695Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.695375Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.684462Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "docs_by_tops(text_nmf,(1,2),(90000,90001))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.699965Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.698971Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.708347Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.707190Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.699914Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(13480, 50)"
+      ]
+     },
+     "execution_count": 37,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "text_nmf.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.725348Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.724617Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.739028Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.738170Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.725299Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "# Function for best topic words using cosine similarity\n",
+    "# Variable Dependency:\n",
+    "word_series = pd.Series(tfidf_words)\n",
+    "\n",
+    "def words_by_tops(tfidf_mat, top_mat, topic_range=(0,0), n_words=10):\n",
+    "    topic_word_scores = tfidf_mat.T * top_mat\n",
+    "    for i in range(topic_range[0],topic_range[1]):\n",
+    "        word_scores = pd.Series(topic_word_scores[:,i])\n",
+    "        word_index = word_scores.sort_values(ascending = False)[:n_words].index\n",
+    "        print('\\nTopic #{}'.format(i))\n",
+    "        for index in word_index:\n",
+    "            print(word_series[index],'\\t\\t', word_scores[index])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.741378Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.740532Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.798820Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.797722Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.741329Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Topic #0\n",
+      "cup \t\t 2.805256138478701\n",
+      "tablespoon \t\t 1.9934989202450755\n",
+      "minute \t\t 1.9428482022393798\n",
+      "teaspoon \t\t 1.9059972186492788\n",
+      "oil \t\t 1.8067178684330556\n",
+      "salt \t\t 1.7757185763807168\n",
+      "pepper \t\t 1.598323882144263\n",
+      "add \t\t 1.5978012819424374\n",
+      "heat \t\t 1.5583147345216226\n",
+      "sugar \t\t 1.449762618802135\n",
+      "\n",
+      "Topic #1\n",
+      "cup \t\t 3.007127091384633\n",
+      "tablespoon \t\t 2.090374314580662\n",
+      "teaspoon \t\t 2.0396423755434956\n",
+      "minute \t\t 2.0235361340341544\n",
+      "oil \t\t 1.9529661955139601\n",
+      "salt \t\t 1.9111723531806366\n",
+      "pepper \t\t 1.7030131763896286\n",
+      "sugar \t\t 1.6352460700473774\n",
+      "add \t\t 1.6334242331719444\n",
+      "heat \t\t 1.5790852753024396\n",
+      "\n",
+      "Topic #2\n",
+      "cup \t\t 2.9121324282101098\n",
+      "tablespoon \t\t 2.0437006031983587\n",
+      "minute \t\t 1.9839320561577247\n",
+      "teaspoon \t\t 1.971606022316561\n",
+      "oil \t\t 1.8390684340496612\n",
+      "salt \t\t 1.8161268296791047\n",
+      "heat \t\t 1.6492862025069037\n",
+      "sugar \t\t 1.641313783023519\n",
+      "add \t\t 1.5629319187610686\n",
+      "pepper \t\t 1.5405802453245532\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Keywords using LDA\n",
+    "words_by_tops(text_tfidf, text_lda, (0,3), 10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "* Same thing as above but here we have used topics from NMF algorithm"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 41,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:42.807103Z",
+     "iopub.status.busy": "2024-04-25T17:59:42.806453Z",
+     "iopub.status.idle": "2024-04-25T17:59:42.858392Z",
+     "shell.execute_reply": "2024-04-25T17:59:42.857286Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:42.807063Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Topic #0\n",
+      "onion \t\t 5.764257863676618\n",
+      "cup \t\t 2.953908098459521\n",
+      "minute \t\t 2.7000447913293186\n",
+      "pepper \t\t 2.695962821858612\n",
+      "chop \t\t 2.5127762480145233\n",
+      "oil \t\t 2.490887456268935\n",
+      "tablespoon \t\t 2.4718247719763284\n",
+      "heat \t\t 2.432234034426504\n",
+      "add \t\t 2.3752600295323525\n",
+      "salt \t\t 2.2360890538262685\n",
+      "\n",
+      "Topic #1\n",
+      "cookie \t\t 10.533252320639901\n",
+      "sugar \t\t 8.443156524181298\n",
+      "bake \t\t 8.117248293177823\n",
+      "sheet \t\t 7.845521436279193\n",
+      "cup \t\t 7.722309978847467\n",
+      "dough \t\t 7.288106151391229\n",
+      "flour \t\t 6.420940145757243\n",
+      "butter \t\t 5.5365356403214285\n",
+      "teaspoon \t\t 5.305658090719038\n",
+      "beat \t\t 5.050397293253561\n",
+      "\n",
+      "Topic #2\n",
+      "dough \t\t 16.292927599344893\n",
+      "flour \t\t 8.2133877212963\n",
+      "cup \t\t 5.234750487102329\n",
+      "sugar \t\t 4.632769638464011\n",
+      "bake \t\t 4.329371133365327\n",
+      "butter \t\t 4.214212022895677\n",
+      "roll \t\t 4.070800364939584\n",
+      "minute \t\t 3.8138040182940096\n",
+      "sheet \t\t 3.710102756578773\n",
+      "teaspoon \t\t 3.5057528116657424\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Words using NMF\n",
+    "words_by_tops(text_tfidf, text_nmf, (0,3), 10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:45.493917Z",
+     "iopub.status.busy": "2024-04-25T17:59:45.493512Z",
+     "iopub.status.idle": "2024-04-25T17:59:45.501422Z",
+     "shell.execute_reply": "2024-04-25T17:59:45.499957Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:45.493884Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "N_topics = 50             # Number of Topics to Extract from corpora\n",
+    "N_top_docs = 200          # Number of top documents within each topic to extract keywords\n",
+    "N_top_words = 25          # Number of keywords to extract from each topic\n",
+    "N_docs_categorized = 2000 # Number of top documents within each topic to tag \n",
+    "N_neighbor_window = 4     # Length of word-radius that defines the neighborhood for\n",
+    "                          # each word in the TextRank adjacency table\n",
+    "\n",
+    "# Query Similarity Weights\n",
+    "w_title = 0.2\n",
+    "w_text = 0.3\n",
+    "w_categories = 0.5\n",
+    "w_array = np.array([w_title, w_text, w_categories])\n",
+    "\n",
+    "# Recipe Stopwords: for any high volume food recipe terminology that doesn't contribute\n",
+    "# to the searchability of a recipe. This list must be manually created.\n",
+    "recipe_stopwords = ['cup','cups','ingredient','ingredients','teaspoon','teaspoons','tablespoon',\n",
+    "                   'tablespoons','C','F','minutes']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:45.503632Z",
+     "iopub.status.busy": "2024-04-25T17:59:45.503173Z",
+     "iopub.status.idle": "2024-04-25T17:59:45.787884Z",
+     "shell.execute_reply": "2024-04-25T17:59:45.786688Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:45.503603Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "topic_transformed_matrix = text_nmf\n",
+    "root_text_data = pd.read_csv('Cleaned_Text.csv').iloc[:, 1].to_list()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:45.789991Z",
+     "iopub.status.busy": "2024-04-25T17:59:45.789632Z",
+     "iopub.status.idle": "2024-04-25T17:59:45.809596Z",
+     "shell.execute_reply": "2024-04-25T17:59:45.808069Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:45.789960Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "def topic_docs_4kwsummary(topic_document_scores, root_text_data):\n",
+    "    '''Gathers and formats the top recipes in each topic'''\n",
+    "    text_index = pd.Series(topic_document_scores).sort_values(ascending = False)[:N_top_docs].index\n",
+    "    text_4kwsummary = pd.Series(root_text_data)[text_index]\n",
+    "    return text_4kwsummary\n",
+    "\n",
+    "def generate_filter_kws(text_list):\n",
+    "    '''Filters out specific parts of speech and stop words from the list of potential keywords'''\n",
+    "    parsed_texts = nlp(' '.join(text_list)) \n",
+    "    kw_filter = set([str(word) for word in parsed_texts \n",
+    "                if (word.pos_== ('NOUN' or 'ADJ' or 'VERB'))\n",
+    "                and word.lemma_ not in recipe_stopwords])\n",
+    "    kw_filter=list(kw_filter)\n",
+    "    kw_filter=sorted(kw_filter)\n",
+    "    print(np.array(kw_filter).shape)\n",
+    "    return kw_filter, parsed_texts\n",
+    "\n",
+    "# def generate_adjacency(kw_filts, parsed_texts):\n",
+    "#     '''Tabulates counts of neighbors in the neighborhood window for each unique word'''\n",
+    "#     adjacency = pd.DataFrame(columns=kw_filts, index=kw_filts, data = 0)\n",
+    "#     for i, word in enumerate(parsed_texts):\n",
+    "#         if any ([str(word) == item for item in kw_filts]):\n",
+    "#             end = min(len(parsed_texts), i+N_neighbor_window+1) # Neighborhood Window Utilized Here\n",
+    "#             nextwords = parsed_texts[i+1:end]\n",
+    "#             inset = [str(x) in kw_filts for x in nextwords]\n",
+    "#             neighbors = [str(nextwords[i]) for i in range(len(nextwords)) if inset[i]]\n",
+    "#             if neighbors:\n",
+    "#                 adjacency.loc[str(word), neighbors] += 1\n",
+    "#     return adjacency\n",
+    "\n",
+    "def generate_adjacency(kw_filts, parsed_texts):\n",
+    "    '''Tabulates counts of neighbors in the neighborhood window for each unique word'''\n",
+    "    kw_filts_list = kw_filts\n",
+    "    adjacency = pd.DataFrame(columns=kw_filts_list, index=kw_filts_list, data=0)\n",
+    "    \n",
+    "    for i, word in enumerate(parsed_texts):\n",
+    "        if str(word) in kw_filts_list:\n",
+    "            end = min(len(parsed_texts), i + N_neighbor_window + 1)  # Neighborhood Window Utilized Here\n",
+    "            nextwords = [str(parsed_texts[j]) for j in range(i + 1, end)]\n",
+    "            inset = [word in kw_filts_list for word in nextwords]\n",
+    "            neighbors = [nextwords[j] for j in range(len(nextwords)) if inset[j]]\n",
+    "            \n",
+    "            if neighbors:\n",
+    "                for neighbor in neighbors:\n",
+    "                    adjacency.loc[str(word), neighbor] += 1\n",
+    "                    # adjacency.loc[neighbor, str(word)] += 1  # Add bidirectional relationship\n",
+    "\n",
+    "    return adjacency\n",
+    "\n",
+    "                \n",
+    "# def generate_wordranks(adjacency):\n",
+    "#     '''Runs TextRank on adjacency table'''\n",
+    "#     nx_words = nx.from_numpy_matrix(adjacency.values)\n",
+    "#     ranks=nx.pagerank(nx_words, alpha=.85, tol=.00000001)\n",
+    "#     return ranks\n",
+    "\n",
+    "def generate_wordranks(adjacency):\n",
+    "    '''Runs TextRank on adjacency table'''\n",
+    "    nx_words = nx.from_numpy_array(adjacency.values)\n",
+    "    ranks = nx.pagerank(nx_words, alpha=0.85, tol=1e-8)\n",
+    "    return ranks\n",
+    "\n",
+    "def generate_tag_list(kw_filter,ranks):\n",
+    "    '''Uses TextRank ranks to return actual key words for each topic in rank order'''\n",
+    "    rank_values = [i for i in ranks.values()]\n",
+    "    ranked = pd.DataFrame(zip(rank_values, kw_filter)).sort_values(by=0,axis=0,ascending=False)\n",
+    "    kw_list = ranked.iloc[:N_top_words,1].to_list()\n",
+    "    return kw_list\n",
+    "\n",
+    "# Master Function utilizing all above functions\n",
+    "def generate_tags(topic_document_scores, root_text_data):\n",
+    "    text_4kwsummary = topic_docs_4kwsummary(topic_document_scores, root_text_data)\n",
+    "    kw_filter, parsed_texts = generate_filter_kws(text_4kwsummary)\n",
+    "    adjacency = generate_adjacency(kw_filter, parsed_texts)\n",
+    "    ranks = generate_wordranks(adjacency)\n",
+    "    kw_list = generate_tag_list(kw_filter,ranks)\n",
+    "    return kw_list\n",
+    "\n",
+    "def generate_kw_index(topic_document_scores):\n",
+    "    kw_index = pd.Series(topic_document_scores).sort_values(ascending = False)[:N_docs_categorized].index\n",
+    "    return kw_index\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 46,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:45.812408Z",
+     "iopub.status.busy": "2024-04-25T17:59:45.811898Z",
+     "iopub.status.idle": "2024-04-25T17:59:46.261466Z",
+     "shell.execute_reply": "2024-04-25T17:59:46.260459Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:45.812368Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "recipes=pd.read_csv('Processed_Recipees.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 47,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T17:59:46.264315Z",
+     "iopub.status.busy": "2024-04-25T17:59:46.262838Z",
+     "iopub.status.idle": "2024-04-25T18:13:22.944304Z",
+     "shell.execute_reply": "2024-04-25T18:13:22.943184Z",
+     "shell.execute_reply.started": "2024-04-25T17:59:46.264275Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(1066,)\n",
+      "Topic #0 Checkpoint\n",
+      "(936,)\n",
+      "(1687,)\n",
+      "(1072,)\n",
+      "(1277,)\n",
+      "(1049,)\n",
+      "(1033,)\n",
+      "(927,)\n",
+      "(1068,)\n",
+      "(1261,)\n",
+      "(1331,)\n",
+      "Topic #10 Checkpoint\n",
+      "(1155,)\n",
+      "(1132,)\n",
+      "(1272,)\n",
+      "(896,)\n",
+      "(1051,)\n",
+      "(464,)\n",
+      "(1117,)\n",
+      "(1055,)\n",
+      "(1060,)\n",
+      "(1130,)\n",
+      "Topic #20 Checkpoint\n",
+      "(1437,)\n",
+      "(1012,)\n",
+      "(1121,)\n",
+      "(1275,)\n",
+      "(1064,)\n",
+      "(1140,)\n",
+      "(1182,)\n",
+      "(1089,)\n",
+      "(1130,)\n",
+      "(1165,)\n",
+      "Topic #30 Checkpoint\n",
+      "(1212,)\n",
+      "(1128,)\n",
+      "(1279,)\n",
+      "(1123,)\n",
+      "(816,)\n",
+      "(1232,)\n",
+      "(1252,)\n",
+      "(1198,)\n",
+      "(1007,)\n",
+      "(1112,)\n",
+      "Topic #40 Checkpoint\n",
+      "(1085,)\n",
+      "(1192,)\n",
+      "(1078,)\n",
+      "(1153,)\n",
+      "(1319,)\n",
+      "(991,)\n",
+      "(1218,)\n",
+      "(1096,)\n",
+      "(1308,)\n",
+      "done!\n"
+     ]
+    }
+   ],
+   "source": [
+    "import networkx as nx\n",
+    "recipes['tag_list'] = [[] for _ in range(recipes.shape[0])]\n",
+    "\n",
+    "for i in range(topic_transformed_matrix.shape[1]):\n",
+    "    scores = topic_transformed_matrix[:, i]\n",
+    "    topic_kws = generate_tags(scores, root_text_data)\n",
+    "    kw_index_4df = generate_kw_index(scores)\n",
+    "    \n",
+    "    # Update the 'tag_list' column\n",
+    "    recipes.loc[kw_index_4df, 'tag_list'] = recipes.loc[kw_index_4df, 'tag_list'].apply(lambda x: x + topic_kws)\n",
+    "    if i % 10 == 0:\n",
+    "        print(f'Topic #{i} Checkpoint')\n",
+    "\n",
+    "print('done!')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "* The numbers shown above are the shape of the tag list for the 50 topics generated by NMF algorithm."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 48,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:22.946375Z",
+     "iopub.status.busy": "2024-04-25T18:13:22.945673Z",
+     "iopub.status.idle": "2024-04-25T18:13:22.967508Z",
+     "shell.execute_reply": "2024-04-25T18:13:22.966458Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:22.946340Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0.1</th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>Title</th>\n",
+       "      <th>Ingredients</th>\n",
+       "      <th>Instructions</th>\n",
+       "      <th>Image_Name</th>\n",
+       "      <th>Cleaned_Ingredients</th>\n",
+       "      <th>Ingredients_Text</th>\n",
+       "      <th>Ingredients_Count</th>\n",
+       "      <th>tag_list</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Miso-Butter Roast Chicken With Acorn Squash Pa...</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>Pat chicken dry with paper towels, season all ...</td>\n",
+       "      <td>miso-butter-roast-chicken-acorn-squash-panzanella</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...</td>\n",
+       "      <td>22</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Crispy Salt and Pepper Potatoes</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>Preheat oven to 400°F and line a rimmed baking...</td>\n",
+       "      <td>crispy-salt-and-pepper-potatoes-dan-kluger</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>2 large egg whites; 1 pound new potatoes (abou...</td>\n",
+       "      <td>7</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Thanksgiving Mac and Cheese</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>Place a rack in middle of oven; preheat to 400...</td>\n",
+       "      <td>thanksgiving-mac-and-cheese-erick-williams</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>1 cup evaporated milk; 1 cup whole milk; 1 tsp...</td>\n",
+       "      <td>10</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Italian Sausage and Bread Stuffing</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>Preheat oven to 350°F with rack in middle. Gen...</td>\n",
+       "      <td>italian-sausage-and-bread-stuffing-240559</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>1 (¾- to 1-pound) round Italian loaf, cut into...</td>\n",
+       "      <td>13</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>Newton's Law</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>Stir together brown sugar and hot water in a c...</td>\n",
+       "      <td>newtons-law-apple-bourbon-cocktail</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>1 teaspoon dark brown sugar; 1 teaspoon hot wa...</td>\n",
+       "      <td>6</td>\n",
+       "      <td>[ounce, juice, ice, ounces, glass, lemon, shak...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0.1  Unnamed: 0  \\\n",
+       "0             0           0   \n",
+       "1             1           1   \n",
+       "2             2           2   \n",
+       "3             3           3   \n",
+       "4             4           4   \n",
+       "\n",
+       "                                               Title  \\\n",
+       "0  Miso-Butter Roast Chicken With Acorn Squash Pa...   \n",
+       "1                    Crispy Salt and Pepper Potatoes   \n",
+       "2                        Thanksgiving Mac and Cheese   \n",
+       "3                 Italian Sausage and Bread Stuffing   \n",
+       "4                                       Newton's Law   \n",
+       "\n",
+       "                                         Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                        Instructions  \\\n",
+       "0  Pat chicken dry with paper towels, season all ...   \n",
+       "1  Preheat oven to 400°F and line a rimmed baking...   \n",
+       "2  Place a rack in middle of oven; preheat to 400...   \n",
+       "3  Preheat oven to 350°F with rack in middle. Gen...   \n",
+       "4  Stir together brown sugar and hot water in a c...   \n",
+       "\n",
+       "                                          Image_Name  \\\n",
+       "0  miso-butter-roast-chicken-acorn-squash-panzanella   \n",
+       "1         crispy-salt-and-pepper-potatoes-dan-kluger   \n",
+       "2         thanksgiving-mac-and-cheese-erick-williams   \n",
+       "3          italian-sausage-and-bread-stuffing-240559   \n",
+       "4                 newtons-law-apple-bourbon-cocktail   \n",
+       "\n",
+       "                                 Cleaned_Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                    Ingredients_Text  Ingredients_Count  \\\n",
+       "0  1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...                 22   \n",
+       "1  2 large egg whites; 1 pound new potatoes (abou...                  7   \n",
+       "2  1 cup evaporated milk; 1 cup whole milk; 1 tsp...                 10   \n",
+       "3  1 (¾- to 1-pound) round Italian loaf, cut into...                 13   \n",
+       "4  1 teaspoon dark brown sugar; 1 teaspoon hot wa...                  6   \n",
+       "\n",
+       "                                            tag_list  \n",
+       "0  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "1  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "2  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "3  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "4  [ounce, juice, ice, ounces, glass, lemon, shak...  "
+      ]
+     },
+     "execution_count": 48,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "recipes.head()\n",
+    "new=recipes\n",
+    "new.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:22.969225Z",
+     "iopub.status.busy": "2024-04-25T18:13:22.968678Z",
+     "iopub.status.idle": "2024-04-25T18:13:23.051742Z",
+     "shell.execute_reply": "2024-04-25T18:13:23.050711Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:22.969189Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0.1</th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>Title</th>\n",
+       "      <th>Ingredients</th>\n",
+       "      <th>Instructions</th>\n",
+       "      <th>Image_Name</th>\n",
+       "      <th>Cleaned_Ingredients</th>\n",
+       "      <th>Ingredients_Text</th>\n",
+       "      <th>Ingredients_Count</th>\n",
+       "      <th>tag_list</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Miso-Butter Roast Chicken With Acorn Squash Pa...</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>Pat chicken dry with paper towels; season all ...</td>\n",
+       "      <td>miso-butter-roast-chicken-acorn-squash-panzanella</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...</td>\n",
+       "      <td>22</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Crispy Salt and Pepper Potatoes</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>Preheat oven to 400°F and line a rimmed baking...</td>\n",
+       "      <td>crispy-salt-and-pepper-potatoes-dan-kluger</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>2 large egg whites; 1 pound new potatoes (abou...</td>\n",
+       "      <td>7</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Thanksgiving Mac and Cheese</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>Place a rack in middle of oven; preheat to 400...</td>\n",
+       "      <td>thanksgiving-mac-and-cheese-erick-williams</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>1 cup evaporated milk; 1 cup whole milk; 1 tsp...</td>\n",
+       "      <td>10</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Italian Sausage and Bread Stuffing</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>Preheat oven to 350°F with rack in middle; Gen...</td>\n",
+       "      <td>italian-sausage-and-bread-stuffing-240559</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>1 (¾- to 1-pound) round Italian loaf, cut into...</td>\n",
+       "      <td>13</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>Newton's Law</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>Stir together brown sugar and hot water in a c...</td>\n",
+       "      <td>newtons-law-apple-bourbon-cocktail</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>1 teaspoon dark brown sugar; 1 teaspoon hot wa...</td>\n",
+       "      <td>6</td>\n",
+       "      <td>[ounce, juice, ice, ounces, glass, lemon, shak...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0.1  Unnamed: 0  \\\n",
+       "0             0           0   \n",
+       "1             1           1   \n",
+       "2             2           2   \n",
+       "3             3           3   \n",
+       "4             4           4   \n",
+       "\n",
+       "                                               Title  \\\n",
+       "0  Miso-Butter Roast Chicken With Acorn Squash Pa...   \n",
+       "1                    Crispy Salt and Pepper Potatoes   \n",
+       "2                        Thanksgiving Mac and Cheese   \n",
+       "3                 Italian Sausage and Bread Stuffing   \n",
+       "4                                       Newton's Law   \n",
+       "\n",
+       "                                         Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                        Instructions  \\\n",
+       "0  Pat chicken dry with paper towels; season all ...   \n",
+       "1  Preheat oven to 400°F and line a rimmed baking...   \n",
+       "2  Place a rack in middle of oven; preheat to 400...   \n",
+       "3  Preheat oven to 350°F with rack in middle; Gen...   \n",
+       "4  Stir together brown sugar and hot water in a c...   \n",
+       "\n",
+       "                                          Image_Name  \\\n",
+       "0  miso-butter-roast-chicken-acorn-squash-panzanella   \n",
+       "1         crispy-salt-and-pepper-potatoes-dan-kluger   \n",
+       "2         thanksgiving-mac-and-cheese-erick-williams   \n",
+       "3          italian-sausage-and-bread-stuffing-240559   \n",
+       "4                 newtons-law-apple-bourbon-cocktail   \n",
+       "\n",
+       "                                 Cleaned_Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                    Ingredients_Text  Ingredients_Count  \\\n",
+       "0  1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...                 22   \n",
+       "1  2 large egg whites; 1 pound new potatoes (abou...                  7   \n",
+       "2  1 cup evaporated milk; 1 cup whole milk; 1 tsp...                 10   \n",
+       "3  1 (¾- to 1-pound) round Italian loaf, cut into...                 13   \n",
+       "4  1 teaspoon dark brown sugar; 1 teaspoon hot wa...                  6   \n",
+       "\n",
+       "                                            tag_list  \n",
+       "0  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "1  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "2  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "3  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "4  [ounce, juice, ice, ounces, glass, lemon, shak...  "
+      ]
+     },
+     "execution_count": 49,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new['Instructions'] = new['Instructions'].str.replace(',', ';')\n",
+    "new['Instructions'] = new['Instructions'].str.replace('.', ';')\n",
+    "new['Instructions'] = new['Instructions'].str.replace('\\n', ';')\n",
+    "new.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:23.053487Z",
+     "iopub.status.busy": "2024-04-25T18:13:23.052979Z",
+     "iopub.status.idle": "2024-04-25T18:13:23.094131Z",
+     "shell.execute_reply": "2024-04-25T18:13:23.092789Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:23.053456Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0.1</th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>Title</th>\n",
+       "      <th>Ingredients</th>\n",
+       "      <th>Instructions</th>\n",
+       "      <th>Image_Name</th>\n",
+       "      <th>Cleaned_Ingredients</th>\n",
+       "      <th>Ingredients_Text</th>\n",
+       "      <th>Ingredients_Count</th>\n",
+       "      <th>tag_list</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Miso-Butter Roast Chicken With Acorn Squash Pa...</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>Pat chicken dry with paper towels; season all ...</td>\n",
+       "      <td>miso-butter-roast-chicken-acorn-squash-panzanella</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...</td>\n",
+       "      <td>22</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Crispy Salt and Pepper Potatoes</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>Preheat oven to 400°F and line a rimmed baking...</td>\n",
+       "      <td>crispy-salt-and-pepper-potatoes-dan-kluger</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>2 large egg whites; 1 pound new potatoes (abou...</td>\n",
+       "      <td>7</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Thanksgiving Mac and Cheese</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>Place a rack in middle of oven; preheat to 400...</td>\n",
+       "      <td>thanksgiving-mac-and-cheese-erick-williams</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>1 cup evaporated milk; 1 cup whole milk; 1 tsp...</td>\n",
+       "      <td>10</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Italian Sausage and Bread Stuffing</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>Preheat oven to 350°F with rack in middle; Gen...</td>\n",
+       "      <td>italian-sausage-and-bread-stuffing-240559</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>1 (¾- to 1-pound) round Italian loaf, cut into...</td>\n",
+       "      <td>13</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>Newton's Law</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>Stir together brown sugar and hot water in a c...</td>\n",
+       "      <td>newtons-law-apple-bourbon-cocktail</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>1 teaspoon dark brown sugar; 1 teaspoon hot wa...</td>\n",
+       "      <td>6</td>\n",
+       "      <td>[ounce, juice, ice, ounces, glass, lemon, shak...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>...</th>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "      <td>...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13475</th>\n",
+       "      <td>13475</td>\n",
+       "      <td>13496</td>\n",
+       "      <td>Brownie Pudding Cake</td>\n",
+       "      <td>['1 cup all-purpose flour', '2/3 cup unsweeten...</td>\n",
+       "      <td>Preheat the oven to 350°F; Into a bowl sift to...</td>\n",
+       "      <td>brownie-pudding-cake-14408</td>\n",
+       "      <td>['1 cup all-purpose flour', '2/3 cup unsweeten...</td>\n",
+       "      <td>1 cup all-purpose flour; 2/3 cup unsweetened c...</td>\n",
+       "      <td>13</td>\n",
+       "      <td>[cream, sugar, ice, bowl, over, mixture, minut...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13476</th>\n",
+       "      <td>13476</td>\n",
+       "      <td>13497</td>\n",
+       "      <td>Israeli Couscous with Roasted Butternut Squash...</td>\n",
+       "      <td>['1 preserved lemon', '1 1/2 pound butternut s...</td>\n",
+       "      <td>Preheat oven to 475°F;;Halve lemons and scoop ...</td>\n",
+       "      <td>israeli-couscous-with-roasted-butternut-squash...</td>\n",
+       "      <td>['1 preserved lemon', '1 1/2 pound butternut s...</td>\n",
+       "      <td>1 preserved lemon; 1 1/2 pound butternut squas...</td>\n",
+       "      <td>10</td>\n",
+       "      <td>[minutes, onions, onion, salt, Add, pepper, oi...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13477</th>\n",
+       "      <td>13477</td>\n",
+       "      <td>13498</td>\n",
+       "      <td>Rice with Soy-Glazed Bonito Flakes and Sesame ...</td>\n",
+       "      <td>['Leftover katsuo bushi (dried bonito flakes) ...</td>\n",
+       "      <td>If using katsuo bushi flakes from package; moi...</td>\n",
+       "      <td>rice-with-soy-glazed-bonito-flakes-and-sesame-...</td>\n",
+       "      <td>['Leftover katsuo bushi (dried bonito flakes) ...</td>\n",
+       "      <td>Leftover katsuo bushi (dried bonito flakes) fr...</td>\n",
+       "      <td>7</td>\n",
+       "      <td>[oil, noodles, sauce, sesame, minutes, Add, so...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13478</th>\n",
+       "      <td>13478</td>\n",
+       "      <td>13499</td>\n",
+       "      <td>Spanakopita</td>\n",
+       "      <td>['1 stick (1/2 cup) plus 1 tablespoon unsalted...</td>\n",
+       "      <td>Melt 1 tablespoon butter in a 12-inch heavy sk...</td>\n",
+       "      <td>spanakopita-107344</td>\n",
+       "      <td>['1 stick (1/2 cup) plus 1 tablespoon unsalted...</td>\n",
+       "      <td>1 stick (1/2 cup) plus 1 tablespoon unsalted b...</td>\n",
+       "      <td>6</td>\n",
+       "      <td>[baking, cookies, sugar, minutes, dough, sheet...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13479</th>\n",
+       "      <td>13479</td>\n",
+       "      <td>13500</td>\n",
+       "      <td>Mexican Poblano, Spinach, and Black Bean \"Lasa...</td>\n",
+       "      <td>['12 medium to large fresh poblano chiles (2 1...</td>\n",
+       "      <td>Lay 4 chiles on their sides on racks of gas bu...</td>\n",
+       "      <td>mexican-poblano-spinach-and-black-bean-lasagne...</td>\n",
+       "      <td>['12 medium to large fresh poblano chiles (2 1...</td>\n",
+       "      <td>12 medium to large fresh poblano chiles (2 1/4...</td>\n",
+       "      <td>20</td>\n",
+       "      <td>[grill, minutes, salt, oil, pepper, heat, side...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>13480 rows × 10 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       Unnamed: 0.1  Unnamed: 0  \\\n",
+       "0                 0           0   \n",
+       "1                 1           1   \n",
+       "2                 2           2   \n",
+       "3                 3           3   \n",
+       "4                 4           4   \n",
+       "...             ...         ...   \n",
+       "13475         13475       13496   \n",
+       "13476         13476       13497   \n",
+       "13477         13477       13498   \n",
+       "13478         13478       13499   \n",
+       "13479         13479       13500   \n",
+       "\n",
+       "                                                   Title  \\\n",
+       "0      Miso-Butter Roast Chicken With Acorn Squash Pa...   \n",
+       "1                        Crispy Salt and Pepper Potatoes   \n",
+       "2                            Thanksgiving Mac and Cheese   \n",
+       "3                     Italian Sausage and Bread Stuffing   \n",
+       "4                                           Newton's Law   \n",
+       "...                                                  ...   \n",
+       "13475                               Brownie Pudding Cake   \n",
+       "13476  Israeli Couscous with Roasted Butternut Squash...   \n",
+       "13477  Rice with Soy-Glazed Bonito Flakes and Sesame ...   \n",
+       "13478                                        Spanakopita   \n",
+       "13479  Mexican Poblano, Spinach, and Black Bean \"Lasa...   \n",
+       "\n",
+       "                                             Ingredients  \\\n",
+       "0      ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1      ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2      ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3      ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4      ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "...                                                  ...   \n",
+       "13475  ['1 cup all-purpose flour', '2/3 cup unsweeten...   \n",
+       "13476  ['1 preserved lemon', '1 1/2 pound butternut s...   \n",
+       "13477  ['Leftover katsuo bushi (dried bonito flakes) ...   \n",
+       "13478  ['1 stick (1/2 cup) plus 1 tablespoon unsalted...   \n",
+       "13479  ['12 medium to large fresh poblano chiles (2 1...   \n",
+       "\n",
+       "                                            Instructions  \\\n",
+       "0      Pat chicken dry with paper towels; season all ...   \n",
+       "1      Preheat oven to 400°F and line a rimmed baking...   \n",
+       "2      Place a rack in middle of oven; preheat to 400...   \n",
+       "3      Preheat oven to 350°F with rack in middle; Gen...   \n",
+       "4      Stir together brown sugar and hot water in a c...   \n",
+       "...                                                  ...   \n",
+       "13475  Preheat the oven to 350°F; Into a bowl sift to...   \n",
+       "13476  Preheat oven to 475°F;;Halve lemons and scoop ...   \n",
+       "13477  If using katsuo bushi flakes from package; moi...   \n",
+       "13478  Melt 1 tablespoon butter in a 12-inch heavy sk...   \n",
+       "13479  Lay 4 chiles on their sides on racks of gas bu...   \n",
+       "\n",
+       "                                              Image_Name  \\\n",
+       "0      miso-butter-roast-chicken-acorn-squash-panzanella   \n",
+       "1             crispy-salt-and-pepper-potatoes-dan-kluger   \n",
+       "2             thanksgiving-mac-and-cheese-erick-williams   \n",
+       "3              italian-sausage-and-bread-stuffing-240559   \n",
+       "4                     newtons-law-apple-bourbon-cocktail   \n",
+       "...                                                  ...   \n",
+       "13475                         brownie-pudding-cake-14408   \n",
+       "13476  israeli-couscous-with-roasted-butternut-squash...   \n",
+       "13477  rice-with-soy-glazed-bonito-flakes-and-sesame-...   \n",
+       "13478                                 spanakopita-107344   \n",
+       "13479  mexican-poblano-spinach-and-black-bean-lasagne...   \n",
+       "\n",
+       "                                     Cleaned_Ingredients  \\\n",
+       "0      ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1      ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2      ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3      ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4      ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "...                                                  ...   \n",
+       "13475  ['1 cup all-purpose flour', '2/3 cup unsweeten...   \n",
+       "13476  ['1 preserved lemon', '1 1/2 pound butternut s...   \n",
+       "13477  ['Leftover katsuo bushi (dried bonito flakes) ...   \n",
+       "13478  ['1 stick (1/2 cup) plus 1 tablespoon unsalted...   \n",
+       "13479  ['12 medium to large fresh poblano chiles (2 1...   \n",
+       "\n",
+       "                                        Ingredients_Text  Ingredients_Count  \\\n",
+       "0      1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...                 22   \n",
+       "1      2 large egg whites; 1 pound new potatoes (abou...                  7   \n",
+       "2      1 cup evaporated milk; 1 cup whole milk; 1 tsp...                 10   \n",
+       "3      1 (¾- to 1-pound) round Italian loaf, cut into...                 13   \n",
+       "4      1 teaspoon dark brown sugar; 1 teaspoon hot wa...                  6   \n",
+       "...                                                  ...                ...   \n",
+       "13475  1 cup all-purpose flour; 2/3 cup unsweetened c...                 13   \n",
+       "13476  1 preserved lemon; 1 1/2 pound butternut squas...                 10   \n",
+       "13477  Leftover katsuo bushi (dried bonito flakes) fr...                  7   \n",
+       "13478  1 stick (1/2 cup) plus 1 tablespoon unsalted b...                  6   \n",
+       "13479  12 medium to large fresh poblano chiles (2 1/4...                 20   \n",
+       "\n",
+       "                                                tag_list  \n",
+       "0      [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "1      [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "2      [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "3      [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "4      [ounce, juice, ice, ounces, glass, lemon, shak...  \n",
+       "...                                                  ...  \n",
+       "13475  [cream, sugar, ice, bowl, over, mixture, minut...  \n",
+       "13476  [minutes, onions, onion, salt, Add, pepper, oi...  \n",
+       "13477  [oil, noodles, sauce, sesame, minutes, Add, so...  \n",
+       "13478  [baking, cookies, sugar, minutes, dough, sheet...  \n",
+       "13479  [grill, minutes, salt, oil, pepper, heat, side...  \n",
+       "\n",
+       "[13480 rows x 10 columns]"
+      ]
+     },
+     "execution_count": 50,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new.reset_index(drop=True)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:23.096483Z",
+     "iopub.status.busy": "2024-04-25T18:13:23.095957Z",
+     "iopub.status.idle": "2024-04-25T18:13:23.120477Z",
+     "shell.execute_reply": "2024-04-25T18:13:23.119125Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:23.096436Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Unnamed: 0.1</th>\n",
+       "      <th>Unnamed: 0</th>\n",
+       "      <th>Title</th>\n",
+       "      <th>Ingredients</th>\n",
+       "      <th>Instructions</th>\n",
+       "      <th>Image_Name</th>\n",
+       "      <th>Cleaned_Ingredients</th>\n",
+       "      <th>Ingredients_Text</th>\n",
+       "      <th>Ingredients_Count</th>\n",
+       "      <th>tag_list</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>Miso-Butter Roast Chicken With Acorn Squash Pa...</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>Pat chicken dry with paper towels; season all ...</td>\n",
+       "      <td>miso-butter-roast-chicken-acorn-squash-panzanella</td>\n",
+       "      <td>['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...</td>\n",
+       "      <td>1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...</td>\n",
+       "      <td>22</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>Crispy Salt and Pepper Potatoes</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>Preheat oven to 400°F and line a rimmed baking...</td>\n",
+       "      <td>crispy-salt-and-pepper-potatoes-dan-kluger</td>\n",
+       "      <td>['2 large egg whites', '1 pound new potatoes (...</td>\n",
+       "      <td>2 large egg whites; 1 pound new potatoes (abou...</td>\n",
+       "      <td>7</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>Thanksgiving Mac and Cheese</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>Place a rack in middle of oven; preheat to 400...</td>\n",
+       "      <td>thanksgiving-mac-and-cheese-erick-williams</td>\n",
+       "      <td>['1 cup evaporated milk', '1 cup whole milk', ...</td>\n",
+       "      <td>1 cup evaporated milk; 1 cup whole milk; 1 tsp...</td>\n",
+       "      <td>10</td>\n",
+       "      <td>[potatoes, minutes, salt, oil, pepper, potato,...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>Italian Sausage and Bread Stuffing</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>Preheat oven to 350°F with rack in middle; Gen...</td>\n",
+       "      <td>italian-sausage-and-bread-stuffing-240559</td>\n",
+       "      <td>['1 (¾- to 1-pound) round Italian loaf, cut in...</td>\n",
+       "      <td>1 (¾- to 1-pound) round Italian loaf, cut into...</td>\n",
+       "      <td>13</td>\n",
+       "      <td>[chicken, minutes, salt, oil, pepper, heat, Ad...</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>Newton's Law</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>Stir together brown sugar and hot water in a c...</td>\n",
+       "      <td>newtons-law-apple-bourbon-cocktail</td>\n",
+       "      <td>['1 teaspoon dark brown sugar', '1 teaspoon ho...</td>\n",
+       "      <td>1 teaspoon dark brown sugar; 1 teaspoon hot wa...</td>\n",
+       "      <td>6</td>\n",
+       "      <td>[ounce, juice, ice, ounces, glass, lemon, shak...</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Unnamed: 0.1  Unnamed: 0  \\\n",
+       "0             0           0   \n",
+       "1             1           1   \n",
+       "2             2           2   \n",
+       "3             3           3   \n",
+       "4             4           4   \n",
+       "\n",
+       "                                               Title  \\\n",
+       "0  Miso-Butter Roast Chicken With Acorn Squash Pa...   \n",
+       "1                    Crispy Salt and Pepper Potatoes   \n",
+       "2                        Thanksgiving Mac and Cheese   \n",
+       "3                 Italian Sausage and Bread Stuffing   \n",
+       "4                                       Newton's Law   \n",
+       "\n",
+       "                                         Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                        Instructions  \\\n",
+       "0  Pat chicken dry with paper towels; season all ...   \n",
+       "1  Preheat oven to 400°F and line a rimmed baking...   \n",
+       "2  Place a rack in middle of oven; preheat to 400...   \n",
+       "3  Preheat oven to 350°F with rack in middle; Gen...   \n",
+       "4  Stir together brown sugar and hot water in a c...   \n",
+       "\n",
+       "                                          Image_Name  \\\n",
+       "0  miso-butter-roast-chicken-acorn-squash-panzanella   \n",
+       "1         crispy-salt-and-pepper-potatoes-dan-kluger   \n",
+       "2         thanksgiving-mac-and-cheese-erick-williams   \n",
+       "3          italian-sausage-and-bread-stuffing-240559   \n",
+       "4                 newtons-law-apple-bourbon-cocktail   \n",
+       "\n",
+       "                                 Cleaned_Ingredients  \\\n",
+       "0  ['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher...   \n",
+       "1  ['2 large egg whites', '1 pound new potatoes (...   \n",
+       "2  ['1 cup evaporated milk', '1 cup whole milk', ...   \n",
+       "3  ['1 (¾- to 1-pound) round Italian loaf, cut in...   \n",
+       "4  ['1 teaspoon dark brown sugar', '1 teaspoon ho...   \n",
+       "\n",
+       "                                    Ingredients_Text  Ingredients_Count  \\\n",
+       "0  1 (3½–4-lb.) whole chicken; 2¾ tsp. kosher sal...                 22   \n",
+       "1  2 large egg whites; 1 pound new potatoes (abou...                  7   \n",
+       "2  1 cup evaporated milk; 1 cup whole milk; 1 tsp...                 10   \n",
+       "3  1 (¾- to 1-pound) round Italian loaf, cut into...                 13   \n",
+       "4  1 teaspoon dark brown sugar; 1 teaspoon hot wa...                  6   \n",
+       "\n",
+       "                                            tag_list  \n",
+       "0  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "1  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "2  [potatoes, minutes, salt, oil, pepper, potato,...  \n",
+       "3  [chicken, minutes, salt, oil, pepper, heat, Ad...  \n",
+       "4  [ounce, juice, ice, ounces, glass, lemon, shak...  "
+      ]
+     },
+     "execution_count": 51,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:23.122521Z",
+     "iopub.status.busy": "2024-04-25T18:13:23.121837Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.046112Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.044912Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:23.122479Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new.to_csv('tagged_recipes_df.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 53,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.047754Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.047418Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.059179Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.057926Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.047726Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0    [chicken, minutes, salt, oil, pepper, heat, Ad...\n",
+       "1    [potatoes, minutes, salt, oil, pepper, potato,...\n",
+       "2    [potatoes, minutes, salt, oil, pepper, potato,...\n",
+       "3    [chicken, minutes, salt, oil, pepper, heat, Ad...\n",
+       "4    [ounce, juice, ice, ounces, glass, lemon, shak...\n",
+       "5    [tsp, Tbsp, salt, minutes, pepper, oil, bowl, ...\n",
+       "Name: tag_list, dtype: object"
+      ]
+     },
+     "execution_count": 53,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new.loc[:5,'tag_list']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 54,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.062182Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.060993Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.135756Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.134765Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.062136Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new['tags'] = [' '.join(tags) for tags in new['tag_list']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.138413Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.137107Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.145521Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.144312Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.138371Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['Unnamed: 0.1', 'Unnamed: 0', 'Title', 'Ingredients', 'Instructions',\n",
+       "       'Image_Name', 'Cleaned_Ingredients', 'Ingredients_Text',\n",
+       "       'Ingredients_Count', 'tag_list', 'tags'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 55,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "new.columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.147452Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.146981Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.157791Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.156550Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.147413Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "new.rename(columns={\n",
+    "    'Title': 'title',\n",
+    "    'Ingredients': 'ingredients',\n",
+    "    'Instructions': 'instructions',\n",
+    "    'Image_Name': 'picture_link',\n",
+    "    'Cleaned_Ingredients': 'ingredient_text',\n",
+    "    'Ingredients_Text': 'ingredient_count',\n",
+    "    'tag_list': 'tag_list',\n",
+    "    'tags': 'tags'\n",
+    "}, inplace=True)\n",
+    "\n",
+    "# Rename the DataFrame itself\n",
+    "new.rename({'new': 'recipes'}, axis=1, inplace=True)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.162432Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.161181Z",
+     "iopub.status.idle": "2024-04-25T18:13:25.172475Z",
+     "shell.execute_reply": "2024-04-25T18:13:25.171097Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.162391Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Index(['Unnamed: 0.1', 'Unnamed: 0', 'title', 'ingredients', 'instructions',\n",
+       "       'picture_link', 'ingredient_text', 'ingredient_count',\n",
+       "       'Ingredients_Count', 'tag_list', 'tags'],\n",
+       "      dtype='object')"
+      ]
+     },
+     "execution_count": 57,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "recipes.columns"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 138,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:25.174347Z",
+     "iopub.status.busy": "2024-04-25T18:13:25.173818Z",
+     "iopub.status.idle": "2024-04-25T18:13:27.156397Z",
+     "shell.execute_reply": "2024-04-25T18:13:27.155177Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:25.174305Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "# Creating TF-IDF Matrices and recalling text dependencies\n",
+    "\n",
+    "'''import text_tokenized.csv here'''\n",
+    "\n",
+    "# TF-IDF vectorizer instance\n",
+    "'''vectorizer = TfidfVectorizer(lowercase = True,\n",
+    "                            ngram_range = (1,1))'''\n",
+    "\n",
+    "'''text_tfidf = vectorizer.fit_transform(tokenized_text)'''\n",
+    "title_tfidf = vectorizer.transform(recipes['title'])\n",
+    "# text_tfidf    <== Variable with recipe ingredients and instructions\n",
+    "tags_tfidf = vectorizer.transform(recipes['tags'])\n",
+    "# recipes   <== DataFrame; For indexing and printing recipes\n",
+    "\n",
+    "# Query Similarity Weights\n",
+    "w_title = .2\n",
+    "w_text = .3\n",
+    "w_categories = .5"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 139,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:27.158783Z",
+     "iopub.status.busy": "2024-04-25T18:13:27.157926Z",
+     "iopub.status.idle": "2024-04-25T18:13:27.176993Z",
+     "shell.execute_reply": "2024-04-25T18:13:27.176110Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:27.158748Z"
+    },
+    "trusted": true
+   },
+   "outputs": [],
+   "source": [
+    "def qweight_array(query_length, qw_array = [1]):\n",
+    "    '''Returns descending weights for ranked query ingredients'''\n",
+    "    if query_length > 1:\n",
+    "        to_split = qw_array.pop()\n",
+    "        split = to_split/2\n",
+    "        qw_array.extend([split, split])\n",
+    "        return qweight_array(query_length - 1, qw_array)\n",
+    "    else:\n",
+    "        return np.array(qw_array)\n",
+    "\n",
+    "def ranked_query(query):\n",
+    "    '''Called if query ingredients are ranked in order of importance.\n",
+    "    Weights and adds each ranked query ingredient vector.'''\n",
+    "    query = [[q] for q in query]      # place words in seperate documents\n",
+    "    q_vecs = [vectorizer.transform(q) for q in query] \n",
+    "    qw_array = qweight_array(len(query),[1])\n",
+    "    q_weighted_vecs = q_vecs * qw_array\n",
+    "    q_final_vector = reduce(np.add,q_weighted_vecs)\n",
+    "    return q_final_vector\n",
+    "\n",
+    "def overall_scores(query_vector):\n",
+    "    '''Calculates Query Similarity Scores against recipe title, instructions, and keywords.\n",
+    "    Then returns weighted averages of similarities for each recipe.'''\n",
+    "    final_scores = title_tfidf*query_vector.T*w_title\n",
+    "    final_scores += text_tfidf*query_vector.T*w_text\n",
+    "    final_scores += tags_tfidf*query_vector.T*w_categories\n",
+    "    return final_scores\n",
+    "\n",
+    "def print_recipes(index, query, recipe_range):\n",
+    "    '''Prints recipes according to query similary ranks'''\n",
+    "    print('Search Query: {}\\n'.format(query))\n",
+    "    for i, index in enumerate(index, recipe_range[0]):\n",
+    "        print('Recipe Rank: {}\\t'.format(i+1),recipes.loc[index, 'title'],'\\n')\n",
+    "        print('Ingredients:\\n{}\\n '.format(recipes.loc[index, 'ingredient_text']))\n",
+    "        print('Instructions:\\n{}\\n'.format(recipes.loc[index, 'instructions']))\n",
+    "        \n",
+    "def Search_Recipes(query, query_ranked=False, recipe_range=(0,3)):\n",
+    "    '''Master Recipe Search Function'''\n",
+    "    if query_ranked == True:\n",
+    "        q_vector = ranked_query(query)\n",
+    "    else:\n",
+    "        q_vector = vectorizer.transform([' '.join(query)])\n",
+    "    recipe_scores = overall_scores(q_vector)\n",
+    "    sorted_index = pd.Series(recipe_scores.toarray().T[0]).sort_values(ascending = False)[recipe_range[0]:recipe_range[1]].index\n",
+    "    return print_recipes(sorted_index, query, recipe_range)\n",
+    "    \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 140,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:27.179073Z",
+     "iopub.status.busy": "2024-04-25T18:13:27.178054Z",
+     "iopub.status.idle": "2024-04-25T18:13:27.218758Z",
+     "shell.execute_reply": "2024-04-25T18:13:27.217587Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:27.178897Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Search Query: ['cinnamon', 'cream', 'banana']\n",
+      "\n",
+      "Recipe Rank: 1\t Cinnamon White Hot Chocolate \n",
+      "\n",
+      "Ingredients:\n",
+      "['4 (3\") cinnamon sticks', '1/8 teaspoon kosher salt', '2 1/2 cups whole milk, divided', '2 teaspoons cornstarch', '2 ounces high-quality white chocolate, chopped or white chocolate chips (about 1/3 cup)', '1/2 teaspoon vanilla extract', 'Unsweetened whipped cream and ground cinnamon (for serving)']\n",
+      " \n",
+      "Instructions:\n",
+      "Toast cinnamon sticks in a medium dry saucepan over medium heat until fragrant; about 1 minute; Add salt and 2 cups milk and bring to a simmer; Remove from heat and let steep 10 minutes;;Whisk cornstarch and remaining 1/2 cup milk in a small bowl; Add to warm milk mixture and heat over medium; Bring to a simmer and cook; stirring constantly; until warmed through; about 1 minute; Remove from heat and add chocolate and vanilla; Let sit until chocolate is melted; about 30 seconds; then stir to combine; Discard cinnamon sticks;;Divide hot chocolate between mugs; Top with whipped cream and dust with ground cinnamon;\n",
+      "\n",
+      "Recipe Rank: 2\t Cinnamon Toast Ice Cream \n",
+      "\n",
+      "Ingredients:\n",
+      "['2 cups whole milk', '2 (3-inch) cinnamon sticks', '5 slices firm white sandwich bread', '1/2 stick (1/4 cup) unsalted butter, melted', '2 tablespoons packed light brown sugar', '1/2 teaspoon ground cinnamon', '6 large egg yolks', '1/2 cup granulated sugar', '1/4 teaspoon molasses', '1 cup heavy cream', 'an instant-read thermometer; an ice cream maker']\n",
+      " \n",
+      "Instructions:\n",
+      "Bring milk and cinnamon sticks to a boil in a 2-quart heavy saucepan; then remove from heat and let steep; covered; 30 minutes;;While milk steeps; put oven racks in upper and lower thirds of oven and preheat oven to 300°F;;Cut 3 slices bread into 1/4-inch cubes and transfer to a bowl; Quarter remaining 2 slices and pulse in a food processor to make bread crumbs; Whisk together butter; brown sugar; and ground cinnamon in another bowl; Drizzle 3 tablespoons butter mixture over bread cubes and stir to lightly coat; Spread in 1 layer in a shallow baking pan; Add bread crumbs to remaining butter mixture and stir to evenly coat; Spread crumbs evenly in another shallow baking pan;;Bake bread cubes and crumbs; stirring occasionally and switching position of pans halfway through baking; until golden brown and crisp; about 25 minutes total; Cool in pans on racks; then transfer bread crumbs to a bowl;;Return milk to a boil; then pour over bread crumbs and let stand 10 minutes; Pour milk through a fine-mesh sieve into saucepan; pressing hard on solids; then discarding them;;Whisk together yolks; granulated sugar; molasses; and a pinch of salt in a bowl; Return milk mixture to a boil and add half to yolk mixture in a slow stream; whisking until combined well; Add yolk mixture in a slow stream to milk in saucepan; whisking; then cook over low heat; stirring constantly; until mixture is thickened and thermometer registers 170 to 175°F (do not let boil);;Remove from heat and immediately stir in cream; then pour custard through fine-mesh sieve into a metal bowl; Quick-chill custard by setting bowl into a larger bowl of ice and cold water and stirring occasionally until cold; about 15 minutes; Freeze custard in ice cream maker until almost firm; Fold bread cubes into ice cream; then transfer to an airtight container and put in freezer to harden; at least 2 hours;\n",
+      "\n",
+      "Recipe Rank: 3\t Chocolate Cinnamon Cream Pie \n",
+      "\n",
+      "Ingredients:\n",
+      "['5 tablespoons unsalted butter, melted', '1 1/2 cups cinnamon graham cracker crumbs (from about twelve 5-by 21/2-inch crackers)', '2 tablespoons sugar', '1/8 teaspoon salt', '6 ounces fine-quality bittersweet chocolate (no more than 60% cacao if marked)', '2 tablespoons cornstarch', '1/3 cup packed light brown sugar, divided', '2 whole large eggs', '2 large egg yolks', '2 cups whole milk', '1/2 cup heavy cream', '1/8 teaspoon salt', '1/2 stick unsalted butter, cut into tablespoons', '1 teaspoon pure vanilla extract', '1 1/2 cups chilled heavy cream', '5 tablespoons confectioners sugar', '1/2 teaspoon cinnamon', '1 (3-to 4-inch-thick) chunk bittersweet chocolate']\n",
+      " \n",
+      "Instructions:\n",
+      "Preheat oven to 350°F with rack in middle;;Stir together all crust ingredients; Press over bottom and up side of a 9-inch pie plate; Bake until set; 12 to 15 minutes; then cool;;Melt chocolate in a large bowl;;Stir together cornstarch and 2 tablespoons brown sugar in a small bowl;;Whisk together whole eggs and yolks in another bowl; then whisk in cornstarch mixture;;Stir together milk; cream; salt; and remaining brown sugar in a heavy medium saucepan and bring just to a boil over medium heat; Pour half of milk mixture into egg mixture in a slow stream; whisking; then pour egg mixture into remaining milk mixture; Bring to a boil over medium-low heat; whisking constantly; then boil; whisking; 1 minute; Remove from heat and whisk in butter and vanilla; Strain through a fine-mesh sieve into melted chocolate and whisk to combine;;Transfer hot filling to crust and chill; its surface covered with parchment; until filling is cold; about 3 hours;;Beat cream with confectioners sugar and cinnamon using an electric mixer until it holds stiff peaks; Spoon over chilled filling;;Hold chocolate in your hands (or microwave on low power in 10-second intervals) until surface softens slightly; Using a vegetable peeler (preferably Y-shaped); \"peel\" large chocolate curls onto a paper towel; If curls are too brittle or don't form easily; rewarm chocolate just until surface softens;;Sprinkle curls on pie;\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "query = ['cinnamon', 'cream', 'banana']\n",
+    "Search_Recipes(query, query_ranked=True, recipe_range=(0,3))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 141,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:27.222503Z",
+     "iopub.status.busy": "2024-04-25T18:13:27.222082Z",
+     "iopub.status.idle": "2024-04-25T18:13:27.242961Z",
+     "shell.execute_reply": "2024-04-25T18:13:27.242083Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:27.222471Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Search Query: ['wine', 'cilantro', 'butter']\n",
+      "\n",
+      "Recipe Rank: 1\t Chile-Cilantro Butter \n",
+      "\n",
+      "Ingredients:\n",
+      "['1 finely chopped seeded Fresno chile', '1 tablespoon chopped fresh cilantro or marjoram', '1/2 teaspoon fresh lemon or lime juice', '1/2 teaspoon kosher salt', '1/2 cup (1 stick) room-temperature unsalted butter', 'Freshly ground black pepper']\n",
+      " \n",
+      "Instructions:\n",
+      "Mix 1 finely chopped seeded Fresno chile; 1 tablespoon chopped fresh cilantro or marjoram; 1/2 teaspoon fresh lemon or lime juice; and 1/2 teaspoon kosher salt into 1/2 cup (1 stick) room-temperature unsalted butter; Season with freshly ground black pepper; Place on parchment or waxed paper and roll up into a log; Chill until firm; 1 hour;;Butter can be made 2 days ahead; Keep chilled;\n",
+      "\n",
+      "Recipe Rank: 2\t Grilled Corn with Lime-Cilantro Butter \n",
+      "\n",
+      "Ingredients:\n",
+      "['8 tablespoons (1 stick) unsalted butter, softened', '1 tablespoon freshly squeezed lime juice', '1/2 teaspoon lime zest', '1/2 teaspoon sugar', '1/2 teaspoon salt', '1/4 cup chopped fresh cilantro', '12 ears fresh corn', 'shucked']\n",
+      " \n",
+      "Instructions:\n",
+      "1; Combine the butter; lime juice; lime zest; sugar; salt; and cilantro in a medium bowl and mix well;;2; Grill the corn on a medium-hot grill for 10 minutes; turning occasionally;;3; Transfer the lime-cilantro butter to a serving bowl and serve with the corn;\n",
+      "\n",
+      "Recipe Rank: 3\t Cilantro Garlic Yogurt Sauce \n",
+      "\n",
+      "Ingredients:\n",
+      "['1 1/2 cups plain whole-milk Greek-style yogurt', '3/4 cup finely chopped cilantro', '4 1/2 tablespoons fresh lemon juice', '1 1/2 teaspoons finely chopped garlic', '3/4 teaspoon cayenne']\n",
+      " \n",
+      "Instructions:\n",
+      "Stir together all ingredients with 1 teaspoon salt (or to taste); then chill; covered; at least 30 minutes (for flavors to blend); Bring to room temperature before serving;\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Test Rank\n",
+    "query = ['wine', 'cilantro','butter']\n",
+    "Search_Recipes(query, query_ranked=False, recipe_range=(0,3))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-04-25T18:13:27.308214Z",
+     "iopub.status.busy": "2024-04-25T18:13:27.307545Z",
+     "iopub.status.idle": "2024-04-25T18:13:27.327253Z",
+     "shell.execute_reply": "2024-04-25T18:13:27.326006Z",
+     "shell.execute_reply.started": "2024-04-25T18:13:27.308171Z"
+    },
+    "trusted": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Search Query: []\n",
+      "\n",
+      "Recipe Rank: 1\t Miso-Butter Roast Chicken With Acorn Squash Panzanella \n",
+      "\n",
+      "Ingredients:\n",
+      "['1 (3½–4-lb.) whole chicken', '2¾ tsp. kosher salt, divided, plus more', '2 small acorn squash (about 3 lb. total)', '2 Tbsp. finely chopped sage', '1 Tbsp. finely chopped rosemary', '6 Tbsp. unsalted butter, melted, plus 3 Tbsp. room temperature', '¼ tsp. ground allspice', 'Pinch of crushed red pepper flakes', 'Freshly ground black pepper', '⅓ loaf good-quality sturdy white bread, torn into 1\" pieces (about 2½ cups)', '2 medium apples (such as Gala or Pink Lady; about 14 oz. total), cored, cut into 1\" pieces', '2 Tbsp. extra-virgin olive oil', '½ small red onion, thinly sliced', '3 Tbsp. apple cider vinegar', '1 Tbsp. white miso', '¼ cup all-purpose flour', '2 Tbsp. unsalted butter, room temperature', '¼ cup dry white wine', '2 cups unsalted chicken broth', '2 tsp. white miso', 'Kosher salt', 'freshly ground pepper']\n",
+      " \n",
+      "Instructions:\n",
+      "Pat chicken dry with paper towels; season all over with 2 tsp; salt; and tie legs together with kitchen twine; Let sit at room temperature 1 hour;;Meanwhile; halve squash and scoop out seeds; Run a vegetable peeler along ridges of squash halves to remove skin; Cut each half into ½\"-thick wedges; arrange on a rimmed baking sheet;;Combine sage; rosemary; and 6 Tbsp; melted butter in a large bowl; pour half of mixture over squash on baking sheet; Sprinkle squash with allspice; red pepper flakes; and ½ tsp; salt and season with black pepper; toss to coat;;Add bread; apples; oil; and ¼ tsp; salt to remaining herb butter in bowl; season with black pepper and toss to combine; Set aside;;Place onion and vinegar in a small bowl; season with salt and toss to coat; Let sit; tossing occasionally; until ready to serve;;Place a rack in middle and lower third of oven; preheat to 425°F; Mix miso and 3 Tbsp; room-temperature butter in a small bowl until smooth; Pat chicken dry with paper towels; then rub or brush all over with miso butter; Place chicken in a large cast-iron skillet and roast on middle rack until an instant-read thermometer inserted into the thickest part of breast registers 155°F; 50–60 minutes; (Temperature will climb to 165°F while chicken rests;) Let chicken rest in skillet at least 5 minutes; then transfer to a plate; reserve skillet;;Meanwhile; roast squash on lower rack until mostly tender; about 25 minutes; Remove from oven and scatter reserved bread mixture over; spreading into as even a layer as you can manage; Return to oven and roast until bread is golden brown and crisp and apples are tender; about 15 minutes; Remove from oven; drain pickled onions; and toss to combine; Transfer to a serving dish;;Using your fingers; mash flour and butter in a small bowl to combine;;Set reserved skillet with chicken drippings over medium heat; You should have about ¼ cup; but a little over or under is all good; (If you have significantly more; drain off and set excess aside;) Add wine and cook; stirring often and scraping up any browned bits with a wooden spoon; until bits are loosened and wine is reduced by about half (you should be able to smell the wine); about 2 minutes; Add butter mixture; cook; stirring often; until a smooth paste forms; about 2 minutes; Add broth and any reserved drippings and cook; stirring constantly; until combined and thickened; 6–8 minutes; Remove from heat and stir in miso; Taste and season with salt and black pepper;;Serve chicken with gravy and squash panzanella alongside;\n",
+      "\n",
+      "Recipe Rank: 2\t Mandarin Orange Ice Cream with Sesame Brittle \n",
+      "\n",
+      "Ingredients:\n",
+      "['3 cups heavy cream', '3 cups fresh mandarin orange or clementine juice', '6 large egg yolks', '3/4 cup sugar', '1/3 cup mild honey', '1/2 tablespoon grated mandarin orange or clementine zest', '2/3 cup white sesame seeds (not toasted)', '1/2 cup black sesame seeds (not toasted)', '2/3 cup sugar', '3 tablespoons mild honey', 'Equipment: an ice cream maker']\n",
+      " \n",
+      "Instructions:\n",
+      "Bring cream; juice; and a pinch of salt to a simmer in a heavy medium saucepan over medium heat;;Whisk together yolks; sugar; and honey; then add half of cream mixture in a slow stream; whisking constantly; Pour back into saucepan and cook over medium heat; stirring constantly with a wooden spoon; until custard thickens slightly and registers 170 to 175°F on an instant-read thermometer (do not let boil);;Strain through a fine-mesh sieve into a bowl and stir in zest; Chill custard; stirring occasionally; until cold; at least 6 hours;;Place a large sheet of foil (shiny side up) on a heatproof work surface;;Toast white and black sesame seeds in a large heavy skillet over medium heat; stirring until white seeds are golden; about 8 minutes; then transfer to a plate;;Heat sugar and honey with a pinch of salt in a 2 quart heavy sauce pan over medium heat; stirring often; until deep golden; about 5 minutes; Stir in sesame seeds and remove from heat; Pour mixture onto foil; smoothing top and spreading into a 10-to 11-inch round with a metal offset spatula (mixture will be very hot); then cool to room temperature;;Invert brittle onto a cutting board and peel off foil; Cut brittle into small pieces; Transfer to airtight container;;Freeze custard in an ice cream maker in 2 separate batches; Fold 3/4 cup sesame brittle into each batch after freezing; Transfer to an airtight container and put in freezer to firm up; about 4 hours; Serve with remaining brittle if desired;\n",
+      "\n",
+      "Recipe Rank: 3\t Strawberry Sorbato and Prosecco Floats \n",
+      "\n",
+      "Ingredients:\n",
+      "['1 1/2 pounds ripe strawberries, sliced', '1 cup sugar', 'Pinch of salt', '3/4 cup heavy whipping cream', '1 1/2 tablespoons fresh lemon juice', '1 750-ml bottle Prosecco or other sparkling white wine, chilled', 'Ice cream maker']\n",
+      " \n",
+      "Instructions:\n",
+      "Toss berries; sugar; and salt in large bowl; Let stand until juicy; about 30 minutes; Puree mixture in batches in blender; Press through fine strainer into medium bowl; Mix cream and lemon juice into puree; Process in ice cream maker according to manufacturer's instructions; Transfer to container; cover and freeze until firm; at least 3 hours and up to 2 days;;Place 1 scoop sorbato in each of 8 glasses; Fill each glass with Prosecco (sorbato will float to top);\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "\n",
+    "query = []\n",
+    "Search_Recipes(query, query_ranked=False, recipe_range=(0,3))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 1169316,
+     "sourceId": 1958932,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "dockerImageVersionId": 30698,
+   "isGpuEnabled": false,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}

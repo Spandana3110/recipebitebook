@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-page">
+                <i class="fas fa-exclamation-circle fa-5x text-warning mb-4"></i>
+                <h1 class="display-4">404</h1>
+                <h2>Page Not Found</h2>
+                <p class="lead text-muted">Sorry, we couldn't find the recipe you're looking for.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('home') }}" class="btn btn-primary me-2">Go Home</a>
+                    <a href="{{ url_for('search') }}" class="btn btn-outline-primary">Search Recipes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

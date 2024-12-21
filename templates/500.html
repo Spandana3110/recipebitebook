@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-page">
+                <i class="fas fa-exclamation-triangle fa-5x text-danger mb-4"></i>
+                <h1 class="display-4">500</h1>
+                <h2>Server Error</h2>
+                <p class="lead text-muted">Sorry, something went wrong on our end. We're working to fix it.</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('home') }}" class="btn btn-primary me-2">Go Home</a>
+                    <a href="javascript:history.back()" class="btn btn-outline-primary">Go Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

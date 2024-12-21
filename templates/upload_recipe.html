@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Recipe{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="text-center mb-4">Upload a New Recipe</h2>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('upload_recipe') }}">
+                        <div class="form-group mb-3">
+                            <label for="title">Recipe Title*</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="ingredients">Ingredients* (comma-separated)</label>
+                            <textarea class="form-control" id="ingredients" name="ingredients" rows="4" required
+                                    placeholder="e.g., 2 cups flour, 1 cup sugar, 2 eggs"></textarea>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="instructions">Instructions*</label>
+                            <textarea class="form-control" id="instructions" name="instructions" rows="6" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="prep_time">Preparation Time (minutes)</label>
+                                    <input type="number" class="form-control" id="prep_time" name="prep_time" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="cook_time">Cooking Time (minutes)</label>
+                                    <input type="number" class="form-control" id="cook_time" name="cook_time" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="cuisine">Cuisine</label>
+                            <select class="form-control" id="cuisine" name="cuisine">
+                                <option value="">Select Cuisine</option>
+                                <option value="Italian">Italian</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Mexican">Mexican</option>
+                                <option value="American">American</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Thai">Thai</option>
+                                <option value="Mediterranean">Mediterranean</option>
+                                <option value="French">French</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Upload Recipe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - BiteBook</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Playfair+Display:wght@400;600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-container">
+                <a href="{{ url_for('home') }}" class="logo">
+                    <img src="{{ url_for('static', filename='images/newlogo.png') }}" alt="BiteBook" class="logo-image">
+                    <span class="logo-text">Bite<span class="highlight">Book</span></span>
+                </a>
+            </div>
+            
+            <nav class="main-nav">
+                <button class="mobile-menu-btn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('home') }}" class="nav-item {% if request.endpoint == 'home' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Home
+                    </a></li>
+                    <li><a href="{{ url_for('search') }}" class="nav-item {% if request.endpoint == 'search' %}active{% endif %}">
+                        <i class="fas fa-search"></i> Search Recipes
+                    </a></li>
+                    <li><a href="{{ url_for('about') }}" class="nav-item {% if request.endpoint == 'about' %}active{% endif %}">
+                        <i class="fas fa-info-circle"></i> About Us
+                    </a></li>
+                    {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('favorites') }}" class="nav-item {% if request.endpoint == 'favorites' %}active{% endif %}">
+                        <i class="fas fa-heart"></i> Favorites
+                    </a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            <div class="auth-buttons">
+                {% if current_user.is_authenticated %}
+                <div class="profile-dropdown">
+                    <div class="profile-logo">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('profile') }}" class="dropdown-item">
+                            <i class="fas fa-user-circle"></i>
+                            Profile
+                        </a>
+                        <a href="{{ url_for('favorites') }}" class="dropdown-item">
+                            <i class="fas fa-heart"></i>
+                            Favorites
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{{ url_for('logout') }}" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-signin">Sign In</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-signup">SIGN UP</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer mt-auto py-4 bg-light">
+        <div class="container text-center text-muted">
+            <small>&copy; {{ now.year }} BiteBook. All rights reserved.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+            this.classList.toggle('active');
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

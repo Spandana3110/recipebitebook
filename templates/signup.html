@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-box">
+            <div class="auth-header">
+                <img src="{{ url_for('static', filename='images/newlogo.png') }}" alt="BiteBook" class="auth-logo">
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Join our community of food lovers</p>
+            </div>
+            
+            <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="name" name="name" placeholder="Full Name" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="Email address" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" placeholder="Password" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <i class="fas fa-utensils"></i>
+                        <textarea id="dietary_preferences" name="dietary_preferences" 
+                                placeholder="Dietary Preferences (e.g., vegetarian, gluten-free)" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="auth-button">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

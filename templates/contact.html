@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+    <!-- Contact Hero Section -->
+    <section class="contact-hero text-center py-5">
+        <div class="container">
+            <h1 class="display-4 mb-4">Get in Touch</h1>
+            <p class="lead mb-4">We'd love to hear from you! Send us your questions, feedback, or suggestions.</p>
+        </div>
+    </section>
+
+    <!-- Contact Form Section -->
+    <section class="contact-form-section py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="contact-info pe-md-4">
+                        <h2 class="section-title mb-4">Contact Information</h2>
+                        <p class="lead mb-4">Have a question or suggestion? We're here to help!</p>
+                        
+                        <div class="contact-methods">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-envelope text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 mb-1">Email Us</h3>
+                                    <p class="mb-0">support@bitebook.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-phone text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 mb-1">Call Us</h3>
+                                    <p class="mb-0">+1 (555) 123-4567</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="icon-box me-3">
+                                    <i class="fas fa-map-marker-alt text-primary fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h5 mb-1">Visit Us</h3>
+                                    <p class="mb-0">123 Foodie Street<br>San Francisco, CA 94105</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="social-links mt-5">
+                            <h3 class="h5 mb-3">Follow Us</h3>
+                            <a href="#" class="btn btn-outline-primary me-2">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-primary me-2">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-primary me-2">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            <a href="#" class="btn btn-outline-primary">
+                                <i class="fab fa-pinterest"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="contact-form card shadow-sm">
+                        <div class="card-body p-4">
+                            <h2 class="section-title mb-4">Send Us a Message</h2>
+                            <form method="POST" action="{{ url_for('contact') }}">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Your Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section py-5 bg-light">
+        <div class="container">
+            <h2 class="section-title text-center mb-5">Frequently Asked Questions</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1">
+                                    How do I create an account?
+                                </button>
+                            </h2>
+                            <div id="faqCollapse1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Click the "Sign Up" button in the top right corner and fill out the registration form. You can also sign up using your Google or Facebook account.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2">
+                                    How do I share my recipes?
+                                </button>
+                            </h2>
+                            <div id="faqCollapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    After logging in, click on "Upload Recipe" in the navigation menu. Fill out the recipe form with ingredients, instructions, and photos.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3">
+                                    Can I save my favorite recipes?
+                                </button>
+                            </h2>
+                            <div id="faqCollapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Click the heart icon on any recipe to add it to your favorites. Access your saved recipes from the "Favorites" section in your profile.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}About Us{% endblock %}
+
+{% block content %}
+<div class="about-page">
+    <!-- Hero Section -->
+    <section class="about-hero">
+        <div class="hero-content">
+            <h1>About BiteBook</h1>
+            <p>Connecting food lovers through the joy of cooking</p>
+        </div>
+    </section>
+
+    <!-- Our Story Section -->
+    <section class="story-section">
+        <div class="container">
+            <div class="story-content">
+                <div class="story-image">
+                    <img src="{{ url_for('static', filename='images/aboutphoto.jpg') }}" 
+                         alt="Our Story" class="rounded shadow">
+                </div>
+                <div class="story-text">
+                    <h2>Our Story</h2>
+                    <p class="lead">BiteBook started with a simple idea: making cooking more accessible and enjoyable for everyone.</p>
+                    <p>We believe that cooking is more than just following recipes – it's about creativity, sharing, and bringing people together. Our platform is designed to inspire both novice cooks and seasoned chefs to explore new flavors and share their culinary adventures.</p>
+                    <p>What began as a small community of food enthusiasts has grown into a global platform where millions of users share their favorite recipes, cooking tips, and food stories.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Our Mission</h2>
+                <p>To inspire and empower people to cook with confidence and creativity</p>
+            </div>
+            <div class="mission-cards">
+                <div class="mission-card">
+                    <div class="card-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Inspire</h3>
+                    <p>Discover new recipes and cooking techniques from our diverse community of food lovers.</p>
+                </div>
+                <div class="mission-card">
+                    <div class="card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Connect</h3>
+                    <p>Build connections with fellow food enthusiasts and share your culinary experiences.</p>
+                </div>
+                <div class="mission-card">
+                    <div class="card-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <h3>Learn</h3>
+                    <p>Access cooking tips, tutorials, and resources to enhance your culinary skills.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Meet Our Team</h2>
+                <p>Expert chefs bringing you the best culinary experiences</p>
+            </div>
+            <div class="team-cards">
+                <div class="team-card">
+                    <div class="member-image">
+                        <img src="{{ url_for('static', filename='images/ranveer-brar-1.jpg') }}" 
+                             alt="Ranveer Brar">
+                    </div>
+                    <div class="member-info">
+                        <h3>Ranveer Brar</h3>
+                        <p class="role">Master Chef & Culinary Expert</p>
+                        <p class="bio">Celebrity chef, restaurateur, and food film producer known for his innovative approach to Indian cuisine.</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="member-image">
+                        <img src="{{ url_for('static', filename='images/img_117407_garima_arora.jpg') }}" 
+                             alt="Garima Arora">
+                    </div>
+                    <div class="member-info">
+                        <h3>Garima Arora</h3>
+                        <p class="role">Executive Chef & Innovation Lead</p>
+                        <p class="bio">First Indian female chef to earn a Michelin star, known for her creative fusion of traditional and modern techniques.</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="member-image">
+                        <img src="{{ url_for('static', filename='images/vikas_k.jpg') }}" 
+                             alt="Vikas Khanna">
+                    </div>
+                    <div class="member-info">
+                        <h3>Vikas Khanna</h3>
+                        <p class="role">Global Culinary Director</p>
+                        <p class="bio">Michelin-starred chef, restaurateur, and cookbook author specializing in Indian cuisine and cultural fusion.</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-facebook"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

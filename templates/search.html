@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+
+{% block title %}Search Recipes{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <!-- Header -->
+                <div class="search-header text-center">
+                    <h1 class="main-title">Find Your Perfect Recipe</h1>
+                    <p class="subtitle">Discover delicious recipes for your next meal</p>
+                </div>
+
+                <!-- Search Cards -->
+                <div class="search-cards">
+                    <!-- Ingredients Search Card -->
+                    <div class="search-card ingredients-card">
+                        <div class="card-icon">
+                            <i class="fas fa-carrot"></i>
+                        </div>
+                        <h3>Search by Ingredients</h3>
+                        <form action="{{ url_for('search_results') }}" method="GET">
+                            <div class="search-field">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-leaf"></i>
+                                    </span>
+                                    <textarea class="form-control" id="ingredients" name="ingredients" 
+                                              rows="2" placeholder="Enter ingredients (e.g., tomatoes, garlic, olive oil)"
+                                              required></textarea>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Separate ingredients with commas
+                                </div>
+                            </div>
+                            <input type="hidden" name="search_type" value="ingredients">
+                            <button type="submit" class="btn search-btn">
+                                <i class="fas fa-utensils"></i>
+                                Find Matching Recipes
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Recipe Name Search Card -->
+                    <div class="search-card recipe-card">
+                        <div class="card-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h3>Search by Recipe Name</h3>
+                        <form action="{{ url_for('search_results') }}" method="GET">
+                            <div class="search-field">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="query" name="query" 
+                                           placeholder="Enter recipe name (e.g., Spaghetti Carbonara)"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i>
+                                    Enter the name of your favorite recipe
+                                </div>
+                            </div>
+                            <input type="hidden" name="search_type" value="recipe_name">
+                            <button type="submit" class="btn search-btn">
+                                <i class="fas fa-search"></i>
+                                Search Recipes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="container mt-3">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-lg-8">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endwith %}
+
+<style>
+.search-container {
+    min-height: 100vh;
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+}
+
+.search-header {
+    margin-bottom: 3rem;
+}
+
+.main-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.subtitle {
+    font-size: 1.3rem;
+    color: #34495e;
+}
+
+.search-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.search-card {
+    background: white;
+    border-radius: 25px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.search-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, #e67e22, #f39c12);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.search-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.search-card:hover::before {
+    opacity: 1;
+}
+
+.card-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 2rem;
+    background: #f8f9fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.ingredients-card .card-icon {
+    background: linear-gradient(135deg, #fff5e6, #ffecd1);
+    border: 2px solid rgba(230, 126, 34, 0.2);
+    color: #e67e22;
+    width: 90px;
+    height: 90px;
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    transition: all 0.4s ease;
+}
+
+.ingredients-card:hover .card-icon {
+    transform: rotate(15deg) scale(1.1);
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    color: white;
+    box-shadow: 0 10px 25px rgba(230, 126, 34, 0.2);
+}
+
+.recipe-card .card-icon {
+    color: #3498db;
+    background: #e3f2fd;
+    border-color: #3498db;
+}
+
+.recipe-card:hover .card-icon {
+    background: #3498db;
+    color: white;
+    transform: rotate(-15deg) scale(1.1);
+    box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+}
+
+.search-card h3 {
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+
+.ingredients-card h3 {
+    color: #d35400;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.ingredients-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(to right, #e67e22, #d35400);
+    border-radius: 3px;
+}
+
+.search-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 3px;
+}
+
+.input-group {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.input-group:focus-within {
+    border-color: #3498db;
+    box-shadow: 0 12px 25px rgba(52, 152, 219, 0.15);
+    transform: translateY(-2px);
+}
+
+.ingredients-card .input-group {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(230, 126, 34, 0.2);
+    box-shadow: 0 8px 20px rgba(230, 126, 34, 0.05);
+}
+
+.ingredients-card .input-group:focus-within {
+    border-color: #e67e22;
+    box-shadow: 0 12px 25px rgba(230, 126, 34, 0.15);
+}
+
+.input-group-text {
+    background: transparent;
+    border: none;
+    color: #3498db;
+    padding: 1rem 1.2rem;
+    font-size: 1.3rem;
+    transition: all 0.3s ease;
+}
+
+.ingredients-card .input-group-text {
+    color: #e67e22;
+    font-size: 1.4rem;
+}
+
+.input-group:focus-within .input-group-text {
+    color: #2980b9;
+    transform: scale(1.1);
+}
+
+.form-control {
+    border: none;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.ingredients-card .form-control {
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    padding: 1.2rem;
+}
+
+.form-control:focus {
+    box-shadow: none;
+    background: white;
+}
+
+.form-control::placeholder {
+    color: #95a5a6;
+    font-weight: 400;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.ingredients-card .form-control::placeholder {
+    color: #d35400;
+    opacity: 0.6;
+}
+
+.form-control:focus::placeholder {
+    opacity: 0.5;
+}
+
+textarea.form-control {
+    min-height: 80px;
+    resize: none;
+    line-height: 1.5;
+}
+
+.ingredients-card textarea.form-control {
+    min-height: 100px;
+    border-radius: 0 20px 20px 0;
+}
+
+.form-text {
+    margin-top: 0.8rem;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.ingredients-card .form-text {
+    color: #e67e22;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: 1rem;
+}
+
+.form-text i {
+    color: #e67e22;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.ingredients-card .form-text i {
+    color: #d35400;
+    animation: pulse 2s infinite;
+}
+
+.search-field:hover .form-text {
+    color: #34495e;
+}
+
+.search-field:hover .form-text i {
+    transform: scale(1.1);
+}
+
+.search-btn {
+    width: 100%;
+    padding: 1.2rem;
+    font-size: 1.2rem;
+    border-radius: 15px;
+    border: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.ingredients-card .search-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+    border: none;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 1.2rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(230, 126, 34, 0.2);
+    transition: all 0.3s ease;
+    margin-top: 1.5rem;
+}
+
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: all 0.6s ease;
+}
+
+.search-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.ingredients-card .search-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(230, 126, 34, 0.3);
+}
+
+.search-btn i {
+    margin-right: 0.8rem;
+    font-size: 1.1em;
+    transition: transform 0.3s ease;
+}
+
+.ingredients-card .search-btn i {
+    color: rgba(255, 255, 255, 0.9);
+    margin-right: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.search-btn:hover i {
+    transform: rotate(15deg);
+}
+
+.ingredients-card .search-btn:hover i {
+    transform: rotate(15deg);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+.ingredients-card {
+    background: linear-gradient(145deg, #fff5e6, #ffffff);
+    border: 2px solid rgba(230, 126, 34, 0.1);
+    transition: all 0.4s ease;
+}
+
+.ingredients-card:hover {
+    border-color: rgba(230, 126, 34, 0.3);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(230, 126, 34, 0.1);
+}
+
+@media (max-width: 768px) {
+    .input-group-text {
+        padding: 0.8rem 1rem;
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+
+    textarea.form-control {
+        min-height: 60px;
+    }
+
+    .search-btn {
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .ingredients-card textarea.form-control {
+        min-height: 80px;
+    }
+    
+    .ingredients-card .card-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .ingredients-card h3 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .ingredients-card .search-btn {
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+}
+</style>
+{% endblock %}
